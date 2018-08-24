@@ -7,6 +7,7 @@ package com.feitai.utils.identity;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * 关于异常的工具类.
@@ -16,6 +17,21 @@ import java.io.StringWriter;
  * @author calvin
  */
 public class Exceptions {
+
+	/**
+	 * 将反射时的checked exception转换为unchecked exception.
+	 */
+	public static RuntimeException convertReflectionExceptionToUnchecked(Exception e) {
+		if ((e instanceof IllegalAccessException) || (e instanceof IllegalArgumentException)
+				|| (e instanceof NoSuchMethodException)) {
+			return new IllegalArgumentException(e);
+		} else if (e instanceof InvocationTargetException) {
+			return new RuntimeException(((InvocationTargetException) e).getTargetException());
+		} else if (e instanceof RuntimeException) {
+			return (RuntimeException) e;
+		}
+		return new RuntimeException("Unexpected Checked Exception.", e);
+	}
 
 	/**
 	 * 将CheckedException转换为UncheckedException.
