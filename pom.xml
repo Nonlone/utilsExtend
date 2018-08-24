@@ -60,6 +60,13 @@
             <version>${commons-lang3.version}</version>
         </dependency>
 
+        <!-- OkHttp Client -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>io.springside</groupId>
             <artifactId>springside-utils</artifactId>
