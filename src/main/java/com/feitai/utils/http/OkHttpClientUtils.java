@@ -4,7 +4,10 @@ package com.feitai.utils.http;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -95,5 +98,75 @@ public abstract class OkHttpClientUtils {
         String resopStr = response.body().string();
         //log.info("postJson url<{}> body <{}> resp <{}>", url, body.toString(), resopStr);
         return resopStr;
+    }
+
+    /**
+     * okhttpclient 异步post提交object对象
+     * @param url
+     * @param object
+     * @param callback 如果Callback为空则默认只打日志
+     * @return
+     */
+    public static Call asyncPostObject(String url, Object object, Callback callback) throws Exception {
+        String json = JSON.toJSONString(object);
+        return OkHttpClientUtils.asyncPostJson(url, json, callback);
+    }
+
+
+    /**
+     * okhttpclient 异步post提交json对象
+     * @param url
+     * @param json
+     * @param callback 如果Callback为空则默认只打日志
+     * @return
+     */
+    public static Call asyncPostJson(String url, String json, Callback callback) throws Exception {
+        RequestBody body = RequestBody.create(JSON_MEDIA_TYPE, json);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+
+        Call call = client.newCall(request);
+        if (callback == null) {
+            callback = new LogCallBack();
+        }
+        call.enqueue(callback);
+        log.info("Async request! Url:{}, FromBody:{}", url, body);
+        return call;
+    }
+
+    /**
+     * okhttpclient 异步post提交formbody对象
+     * @param url
+     * @param body
+     * @param callback 如果Callback为空则默认只打日志
+     * @return
+     */
+    public static Call asyncPostFromBody(String url, FormBody body, Callback callback) throws IOException {
+        Request request = new Request.Builder().url(url).post(body).build();
+        Call call = client.newCall(request);
+        if (callback == null) {
+            callback = new LogCallBack();
+        }
+        call.enqueue(callback);
+        log.info("Async request! Url:{}, body:{}", url, body);
+        return call;
+    }
+
+    @Slf4j
+    static class LogCallBack implements Callback {
+        @Override
+        public void onFailure(Call call, IOException e) {
+            //TODO 这body有空得看下是否正确
+            log.error("Url:<" + call.request().url() + ">, body:<" + call.request().body() + ">", e);
+        }
+
+        @Override
+        public void onResponse(Call call, Response response) throws IOException {
+            InputStream is = response.body().byteStream();
+            String result = IOUtils.toString(is, "UTF-8");
+            log.info("Url:{}, FromBody:{}, response: {}", call.request().url(), call.request().body(), result);
+        }
     }
 }
