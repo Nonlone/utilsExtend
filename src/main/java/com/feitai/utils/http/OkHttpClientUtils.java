@@ -13,8 +13,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public abstract class OkHttpClientUtils {
 
-    public static final MediaType JSON_MEDIA_TYPE
-            = MediaType.parse("application/json; charset=utf-8");
+    public static final MediaType JSON_TYPE_UTF_8 = MediaType.parse("application/json; charset=utf-8");
 
     public static final MediaType JSON_TYPE = MediaType.parse("application/json");
 
@@ -27,6 +26,7 @@ public abstract class OkHttpClientUtils {
 
     /**
      * 以“application/json” post提交数据，提交对象为object
+     *
      * @param url
      * @param object
      * @return
@@ -38,12 +38,13 @@ public abstract class OkHttpClientUtils {
 
     /**
      * okhttpclient以“application/json” post提交数据，提交对象为json
+     *
      * @param url
      * @param json
      * @return
      */
     public static String postJson(String url, String json) throws IOException {
-        RequestBody body = RequestBody.create(JSON_MEDIA_TYPE, json);
+        RequestBody body = RequestBody.create(JSON_TYPE_UTF_8, json);
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
@@ -56,6 +57,7 @@ public abstract class OkHttpClientUtils {
 
     /**
      * okhttpclient通过url，get提交
+     *
      * @param url
      * @return
      */
@@ -71,11 +73,12 @@ public abstract class OkHttpClientUtils {
 
     /**
      * okhttpclient通过设置Header与url，Get方法提交
+     *
      * @param headers
      * @param url
      * @return
      */
-    public static String getMethodByHeaders(String url,Headers headers) throws IOException {
+    public static String getMethodByHeaders(String url, Headers headers) throws IOException {
         log.info("[]url:" + url + " headers:", headers);
         Request request = new Request.Builder().url(url)
                 .headers(headers)
@@ -88,11 +91,12 @@ public abstract class OkHttpClientUtils {
 
     /**
      * httpClient 通过formbody，post提交
+     *
      * @param body
      * @param url
      * @return
      */
-    public static String postByFormBody(String url,FormBody body) throws IOException {
+    public static String postByFormBody(String url, FormBody body) throws IOException {
         Request request = new Request.Builder().url(url).post(body).build();
         Response response = client.newCall(request).execute();
         String resopStr = response.body().string();
@@ -102,6 +106,7 @@ public abstract class OkHttpClientUtils {
 
     /**
      * okhttpclient 异步post提交object对象
+     *
      * @param url
      * @param object
      * @param callback 如果Callback为空则默认只打日志
@@ -115,13 +120,14 @@ public abstract class OkHttpClientUtils {
 
     /**
      * okhttpclient 异步post提交json对象
+     *
      * @param url
      * @param json
      * @param callback 如果Callback为空则默认只打日志
      * @return
      */
     public static Call asyncPostJson(String url, String json, Callback callback) throws Exception {
-        RequestBody body = RequestBody.create(JSON_MEDIA_TYPE, json);
+        RequestBody body = RequestBody.create(JSON_TYPE_UTF_8, json);
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
@@ -138,6 +144,7 @@ public abstract class OkHttpClientUtils {
 
     /**
      * okhttpclient 异步post提交formbody对象
+     *
      * @param url
      * @param body
      * @param callback 如果Callback为空则默认只打日志
