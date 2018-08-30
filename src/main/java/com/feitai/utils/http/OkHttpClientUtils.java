@@ -33,7 +33,7 @@ public abstract class OkHttpClientUtils {
      * @param object
      * @return
      */
-    public static String postByBody(@NotNull String url,@NotNull Object object) throws IOException {
+    public static String postByBody(@NotNull String url, Object object) throws IOException {
         return post(url, object).body().string();
     }
 
@@ -45,7 +45,7 @@ public abstract class OkHttpClientUtils {
      * @return Response
      * @throws IOException
      */
-    public static Response post(@NotNull String url, @NotNull Object object) throws IOException {
+    public static Response post(@NotNull String url, Object object) throws IOException {
         String json = JSON.toJSONString(object);
         RequestBody body = RequestBody.create(JSON_TYPE_UTF8, json);
         return post(url,body,null);
@@ -85,16 +85,16 @@ public abstract class OkHttpClientUtils {
     public static Response post(@NotNull String url,RequestBody body,Headers headers)throws IOException{
         //这里获取url数据
         HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(url).newBuilder();
-        if (Objects.nonNull(body)){
-            log.warn("[RequestBody not null , please use another method]");
-            return null;
-        }
+
         Request.Builder builder = new Request.Builder().url(httpUrlBuilder.build());
         if (Objects.nonNull(headers)){
             builder.headers(headers);
         }
+        if (Objects.nonNull(body)){
+            builder.post(body);
+        }
         //这里RequestBody已经包含了MediaType
-        builder.post(body);
+        log.warn("[RequestBody not null , please use another method]");
         return client.newCall(builder.build()).execute();
     }
 
@@ -116,7 +116,7 @@ public abstract class OkHttpClientUtils {
      * @return
      * @throws IOException
      */
-    public static String getByBody(String url, Map<String, String> params) throws IOException {
+    public static String getByBody(@NotNull String url, Map<String, String> params) throws IOException {
         return get(url,params,null).body().string();
     }
 
@@ -137,7 +137,7 @@ public abstract class OkHttpClientUtils {
      * @return Response
      * @throws IOException
      */
-    public static Response doGetReturnResonse(@NotNull String url) throws IOException {
+    public static Response get(@NotNull String url) throws IOException {
         return get(url,null,null);
     }
 
@@ -148,7 +148,7 @@ public abstract class OkHttpClientUtils {
      * @param headers 请求头
      * @return
      */
-    public static String getByBody(String url, Headers headers) throws IOException {
+    public static String getByBody(@NotNull String url, Headers headers) throws IOException {
         return get(url,null,headers).body().string();
     }
 
@@ -196,7 +196,7 @@ public abstract class OkHttpClientUtils {
      * @param callback 如果Callback为空则默认只打日志
      * @return
      */
-    public static Call asyncPostObject(String url, Object object, Callback callback) throws Exception {
+    public static Call asyncPostObject(@NotNull String url, Object object, Callback callback) throws Exception {
         String json = JSON.toJSONString(object);
         return OkHttpClientUtils.asyncPostJson(url, json, callback);
     }
@@ -210,7 +210,7 @@ public abstract class OkHttpClientUtils {
      * @param callback 如果Callback为空则默认只打日志
      * @return
      */
-    public static Call asyncPostJson(String url, String json, Callback callback) throws Exception {
+    public static Call asyncPostJson(@NotNull String url, String json, Callback callback) throws Exception {
         RequestBody body = RequestBody.create(JSON_TYPE_UTF8, json);
         Request request = new Request.Builder()
                 .url(url)
@@ -235,7 +235,7 @@ public abstract class OkHttpClientUtils {
      * @param callback 如果Callback为空则默认只打日志
      * @return
      */
-    public static Call asyncPostFromBody(String url, FormBody body, Callback callback) throws IOException {
+    public static Call asyncPostFromBody(@NotNull String url, FormBody body, Callback callback) throws IOException {
         Request request = new Request.Builder().url(url).post(body).build();
         Call call = client.newCall(request);
         if (callback == null) {
