@@ -11,12 +11,13 @@ import java.util.Random;
  * @date 2016/11/26
  * @url https://raw.githubusercontent.com/beyondfengyu/SnowFlake/master/SnowFlake.java
  */
+@Slf4j
 public class SnowFlakeIdGenerator {
 
     /**
      * 起始的时间戳
      */
-    private final static long START_STMP = 1514736000000L;//System.currentTimeMillis();
+    private final static long START_STMP = 1514736000000L;
 
     /**
      * 每一部分占用的位数
@@ -81,6 +82,8 @@ public class SnowFlakeIdGenerator {
     public synchronized long nextId() {
         long currStmp = getNewstmp();
         if (currStmp < lastStmp) {
+            log.error("Clock moved backwards.  Refusing to generate id, currentTimestamp={}, lastTimestamp={}",
+                    currStmp, lastStmp);
             throw new RuntimeException("Clock moved backwards.  Refusing to generate id");
         }
 
