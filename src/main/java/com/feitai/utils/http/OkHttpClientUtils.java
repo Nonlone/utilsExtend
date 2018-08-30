@@ -1,13 +1,13 @@
 package com.feitai.utils.http;
 
-
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -24,80 +24,188 @@ public abstract class OkHttpClientUtils {
             .readTimeout(60, TimeUnit.SECONDS)
             .build();
 
-
     /**
      * 以“application/json” post提交数据，提交对象为object
      * @param url
      * @param object
      * @return
      */
-    public static String postObject(String url, Object object) throws IOException {
-        String json = JSON.toJSONString(object);
-        return OkHttpClientUtils.postJson(url, json);
+    public static String doPost(String url, Object object) throws IOException {
+        return doPostReturnResponse(url,object).body().string();
     }
 
     /**
-     * okhttpclient以“application/json” post提交数据，提交对象为json
+     * okhttpclient以“application/json” post提交数据
      * @param url
-     * @param json
-     * @return
+     * @param object
+     * @return Response
+     * @throws IOException
      */
-    public static String postJson(String url, String json) throws IOException {
+    public static Response doPostReturnResponse(String url,Object object) throws IOException{
+        String json = JSON.toJSONString(object);
         RequestBody body = RequestBody.create(JSON_MEDIA_TYPE, json);
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
                 .build();
         Response response = client.newCall(request).execute();
-        String resopStr = response.body().string();
-        //log.info("postJson url<{}> req <{}> resp <{}>", url, json, resopStr);
-        return resopStr;
+        return response;
+    }
+
+    /**
+     * okhttpclient通过formbody，post提交
+     * @param url
+     * @param body
+     * @return
+     */
+    public static String doPostByFormBody(String url,FormBody body) throws IOException {
+        return doPostByFormBodyReturnResponse(url,body).body().string();
+    }
+
+    /**
+     * okhttpclient通过formbody，post提交,返回Response
+     * @param url
+     * @param body
+     * @return Response
+     * @throws IOException
+     */
+    public static Response doPostByFormBodyReturnResponse(String url,FormBody body) throws IOException{
+        Request request = new Request.Builder().url(url).post(body).build();
+        Response response = client.newCall(request).execute();
+        return response;
+    }
+
+    /**
+     *
+     * @param url
+     * @param params
+     * @return
+     * @throws IOException
+     */
+    public static Response doGetReturnResponse(String url,Map<String,String> params) throws IOException{
+        if (Objects.nonNull(params) && !params.isEmpty()){
+            URLBuilder urlBuilder = new URLBuilder();
+            urlBuilder.appendPath(url);
+            for (Map.Entry<String,String> entry:params.entrySet()){
+                urlBuilder.appendParam(entry.getKey(),entry.getValue());
+            }
+            return doGetReturnResonse(urlBuilder.toString());
+        }
+        log.warn("[params is null or empty,please use other method]");
+        return null;
+    }
+
+    /**
+     * okhttpclient 通过url 和 params 合拼,get提交方法
+     * @param url
+     * @param params 参数集
+     * @return
+     * @throws IOException
+     */
+    public static String doGet(String url, Map<String,String> params) throws IOException{
+
+        if (Objects.nonNull(params) && !params.isEmpty()){
+            URLBuilder urlBuilder = new URLBuilder();
+            urlBuilder.appendPath(url);
+            for (Map.Entry<String,String> entry:params.entrySet()){
+                urlBuilder.appendParam(entry.getKey(),entry.getValue());
+            }
+            return doGet(urlBuilder.toString());
+        }
+        log.info("[params is null or empty,please use other method]");
+        return null;
     }
 
     /**
      * okhttpclient通过url，get提交
-     * @param url
+     * @param url 传送url和参数集
      * @return
      */
-    public static String getMethod(String url) throws IOException {
+    public static String doGet(String url) throws IOException {
+        return doGetReturnResonse(url).body().string();
+    }
+
+    /**
+     * okhttpclient通过url，get提交，返回Response对象
+     * @param url
+     * @return Response
+     * @throws IOException
+     */
+    public static Response doGetReturnResonse(String url) throws IOException{
         Request request = new Request.Builder()
                 .url(url)
                 .build();
         Response response = client.newCall(request).execute();
-        String resopStr = response.body().string();
-        //log.info("postJson url<{}> resp <{}>", url, resopStr);
-        return resopStr;
+        return response;
     }
 
     /**
      * okhttpclient通过设置Header与url，Get方法提交
-     * @param headers
      * @param url
+     * @param headers 请求头
      * @return
      */
-    public static String getMethodByHeaders(String url,Headers headers) throws IOException {
+    public static String doGetByHeaders(String url,Headers headers) throws IOException {
         log.info("[]url:" + url + " headers:", headers);
+        return doGetWithHeadersReturnResponse(url,headers).body().string();
+    }
+
+    /**
+     * okhttpclient通过设置url与header,get提交，返回Response对象
+     * @param url
+     * @param headers
+     * @return
+     * @throws IOException
+     */
+    public static Response doGetWithHeadersReturnResponse(String url,Headers headers) throws IOException{
         Request request = new Request.Builder().url(url)
                 .headers(headers)
                 .build();
         Response response = client.newCall(request).execute();
-        String resopStr = response.body().string();
-        //log.info("postJson url<{}> headers <{}> resp <{}>", url, headers.toString(), resopStr);
-        return resopStr;
+        return response;
     }
 
     /**
-     * httpClient 通过formbody，post提交
-     * @param body
+     * okhttpclient通过设置url、params、Header，Get方法提交
      * @param url
+     * @param params
+     * @param headers
      * @return
+     * @throws IOException
      */
-    public static String postByFormBody(String url,FormBody body) throws IOException {
-        Request request = new Request.Builder().url(url).post(body).build();
-        Response response = client.newCall(request).execute();
-        String resopStr = response.body().string();
-        //log.info("postJson url<{}> body <{}> resp <{}>", url, body.toString(), resopStr);
-        return resopStr;
+    public static String doGetWithHeaders(String url,Map<String,String> params,Headers headers) throws IOException{
+
+        if (Objects.nonNull(params) && !params.isEmpty()){
+            URLBuilder urlBuilder = new URLBuilder();
+            urlBuilder.appendPath(url);
+            for (Map.Entry<String,String> entry:params.entrySet()){
+                urlBuilder.appendParam(entry.getKey(),entry.getValue());
+            }
+            return doGetByHeaders(urlBuilder.toString(),headers);
+        }
+        log.warn("[params is null or empty,please use other method]");
+        return null;
+    }
+
+    /**
+     * okhttpclient通过设置url、params、Header，Get方法提交，返回Response对象
+     * @param url
+     * @param params
+     * @param headers
+     * @return Response
+     * @throws IOException
+     */
+    public static Response doGetWithHeadersReturnResponse(String url,Map<String,String> params,Headers headers) throws IOException{
+        if (Objects.nonNull(params) && !params.isEmpty()){
+            URLBuilder urlBuilder = new URLBuilder();
+            urlBuilder.appendPath(url);
+            for (Map.Entry<String,String> entry:params.entrySet()){
+                urlBuilder.appendParam(entry.getKey(),entry.getValue());
+            }
+            return doGetWithHeadersReturnResponse(urlBuilder.toString(),headers);
+        }
+        log.warn("[params is null or empty,please use other method]");
+        return null;
     }
 
     /**
@@ -132,6 +240,7 @@ public abstract class OkHttpClientUtils {
             callback = new LogCallBack();
         }
         call.enqueue(callback);
+
         log.info("Async request! Url:{}, FromBody:{}", url, body);
         return call;
     }
@@ -155,7 +264,7 @@ public abstract class OkHttpClientUtils {
     }
 
     @Slf4j
-    static class LogCallBack implements Callback {
+    public static class LogCallBack implements Callback {
         @Override
         public void onFailure(Call call, IOException e) {
             //TODO 这body有空得看下是否正确
