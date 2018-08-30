@@ -1,6 +1,9 @@
 package com.feitai.utils;
 
-import java.text.SimpleDateFormat;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
+
 import java.util.Date;
 import java.util.Random;
 
@@ -119,34 +122,33 @@ public class SnowFlakeIdGenerator {
         return System.currentTimeMillis();
     }
 
-    private static SimpleDateFormat sdf = new SimpleDateFormat("ddHHmmss");
+    /**
+     * 默认时间格式
+     */
+    private final static FastDateFormat fdf = FastDateFormat.getInstance("ddHHmmss");
 
     /**
      * 获取流水号带前缀
+     *
      * @return
      */
-    public static String getSerialNo(String refix){
+    public static String getSerialNo(String prefix) {
         try {
             long nextid = snowFlakeIdGenerator.nextId();
-            if(nextid>0){
-                return refix+nextid;
+            if (nextid > 0) {
+                return prefix + nextid;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(String.format("getSerialNo prefix<%s>", prefix), e);
         }
         String time = "";
         try {
-            time = sdf.format(new Date());
+            time = fdf.format(new Date());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(String.format("getSerialNo prefix<%s>", prefix), e);
             time = "00000000";
         }
-        return refix+time+new Random().nextInt(100);
+        return prefix + time + RandomStringUtils.randomNumeric(5);
     }
 
-//    public static void main(String[] arg){
-//        for(int i=0;i<50;i++){
-//            System.out.println(getSerialNo("ABCD"));
-//        }
-//    }
 }
