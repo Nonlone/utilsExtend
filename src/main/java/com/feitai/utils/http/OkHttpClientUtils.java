@@ -5,7 +5,6 @@ import com.feitai.utils.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.io.IOUtils;
-
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +33,7 @@ public abstract class OkHttpClientUtils {
      * @param object
      * @return
      */
-    public static String postReturnBody(String url, Object object) throws IOException {
+    public static String postByBody(@NotNull String url,@NotNull Object object) throws IOException {
         return post(url, object).body().string();
     }
 
@@ -46,15 +45,10 @@ public abstract class OkHttpClientUtils {
      * @return Response
      * @throws IOException
      */
-    public static Response post(String url, Object object) throws IOException {
+    public static Response post(@NotNull String url, @NotNull Object object) throws IOException {
         String json = JSON.toJSONString(object);
         RequestBody body = RequestBody.create(JSON_TYPE_UTF8, json);
-        Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
-        Response response = client.newCall(request).execute();
-        return response;
+        return post(url,body,null);
     }
 
     /**
@@ -64,8 +58,8 @@ public abstract class OkHttpClientUtils {
      * @param body
      * @return
      */
-    public static String doPostByFormBody(String url, FormBody body) throws IOException {
-        return doPostByFormBodyReturnResponse(url, body).body().string();
+    public static String postByBody(@NotNull String url, FormBody body) throws IOException {
+        return post(url,body,null).body().string();
     }
 
     /**
@@ -76,10 +70,32 @@ public abstract class OkHttpClientUtils {
      * @return Response
      * @throws IOException
      */
-    public static Response doPostByFormBodyReturnResponse(String url, FormBody body) throws IOException {
-        Request request = new Request.Builder().url(url).post(body).build();
-        Response response = client.newCall(request).execute();
-        return response;
+    public static Response post(@NotNull String url, FormBody body) throws IOException {
+        return post(url,body,null);
+    }
+
+    /**
+     * OKhttpClient post提交方法
+     * @param url
+     * @param body
+     * @param headers
+     * @return
+     * @throws IOException
+     */
+    public static Response post(@NotNull String url,RequestBody body,Headers headers)throws IOException{
+        //这里获取url数据
+        HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(url).newBuilder();
+        if (Objects.nonNull(body)){
+            log.warn("[RequestBody not null , please use another method]");
+            return null;
+        }
+        Request.Builder builder = new Request.Builder().url(httpUrlBuilder.build());
+        if (Objects.nonNull(headers)){
+            builder.headers(headers);
+        }
+        //这里RequestBody已经包含了MediaType
+        builder.post(body);
+        return client.newCall(builder.build()).execute();
     }
 
     /**
@@ -88,17 +104,8 @@ public abstract class OkHttpClientUtils {
      * @return
      * @throws IOException
      */
-    public static Response doGetReturnResponse(String url, Map<String, String> params) throws IOException {
-        if (Objects.nonNull(params) && !params.isEmpty()) {
-            URLBuilder urlBuilder = new URLBuilder();
-            urlBuilder.appendPath(url);
-            for (Map.Entry<String, String> entry : params.entrySet()) {
-                urlBuilder.appendParam(entry.getKey(), entry.getValue());
-            }
-            return doGetReturnResonse(urlBuilder.toString());
-        }
-        log.warn("[params is null or empty,please use other method]");
-        return null;
+    public static Response get(@NotNull String url, Map<String, String> params) throws IOException {
+        return get(url,params,null);
     }
 
     /**
@@ -109,19 +116,8 @@ public abstract class OkHttpClientUtils {
      * @return
      * @throws IOException
      */
-    public static String doGet(String url, Map<String, String> params) throws IOException {
-
-        if (Objects.nonNull(params) && !params.isEmpty()) {
-
-            URLBuilder urlBuilder = new URLBuilder();
-            urlBuilder.appendPath(url);
-            for (Map.Entry<String, String> entry : params.entrySet()) {
-                urlBuilder.appendParam(entry.getKey(), entry.getValue());
-            }
-            return doGet(urlBuilder.toString());
-        }
-        log.info("[params is null or empty,please use other method]");
-        return null;
+    public static String getByBody(String url, Map<String, String> params) throws IOException {
+        return get(url,params,null).body().string();
     }
 
     /**
@@ -130,8 +126,8 @@ public abstract class OkHttpClientUtils {
      * @param url 传送url和参数集
      * @return
      */
-    public static String doGet(String url) throws IOException {
-        return doGetReturnResonse(url).body().string();
+    public static String getByBody(@NotNull String url) throws IOException {
+        return get(url,null,null).body().string();
     }
 
     /**
@@ -141,12 +137,8 @@ public abstract class OkHttpClientUtils {
      * @return Response
      * @throws IOException
      */
-    public static Response doGetReturnResonse(String url) throws IOException {
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-        Response response = client.newCall(request).execute();
-        return response;
+    public static Response doGetReturnResonse(@NotNull String url) throws IOException {
+        return get(url,null,null);
     }
 
     /**
@@ -156,9 +148,8 @@ public abstract class OkHttpClientUtils {
      * @param headers 请求头
      * @return
      */
-    public static String doGetByHeaders(String url, Headers headers) throws IOException {
-        log.info("[]url:" + url + " headers:", headers);
-        return doGetWithHeadersReturnResponse(url, headers).body().string();
+    public static String getByBody(String url, Headers headers) throws IOException {
+        return get(url,null,headers).body().string();
     }
 
     /**
@@ -169,12 +160,8 @@ public abstract class OkHttpClientUtils {
      * @return
      * @throws IOException
      */
-    public static Response doGetWithHeadersReturnResponse(String url, Headers headers) throws IOException {
-        Request request = new Request.Builder().url(url)
-                .headers(headers)
-                .build();
-        Response response = client.newCall(request).execute();
-        return response;
+    public static Response get(@NotNull String url, Headers headers) throws IOException {
+        return get(url,null,headers);
     }
 
     /**
@@ -199,28 +186,6 @@ public abstract class OkHttpClientUtils {
             requestBuilder.headers(headers);
         }
         return client.newCall(requestBuilder.build()).execute();
-    }
-
-    /**
-     * okhttpclient通过设置url、params、Header，Get方法提交，返回Response对象
-     *
-     * @param url
-     * @param params
-     * @param headers
-     * @return Response
-     * @throws IOException
-     */
-    public static Response doGetWithHeadersReturnResponse(String url, Map<String, String> params, Headers headers) throws IOException {
-        if (Objects.nonNull(params) && !params.isEmpty()) {
-            URLBuilder urlBuilder = new URLBuilder();
-            urlBuilder.appendPath(url);
-            for (Map.Entry<String, String> entry : params.entrySet()) {
-                urlBuilder.appendParam(entry.getKey(), entry.getValue());
-            }
-            return doGetWithHeadersReturnResponse(urlBuilder.toString(), headers);
-        }
-        log.warn("[params is null or empty,please use other method]");
-        return null;
     }
 
     /**
