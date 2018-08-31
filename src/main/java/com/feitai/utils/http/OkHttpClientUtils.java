@@ -187,7 +187,7 @@ public abstract class OkHttpClientUtils {
                 urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
             }
         } else {
-            if(log.isDebugEnabled()){
+            if (log.isDebugEnabled()) {
                 log.debug("get params is null or empty url<{}>", url);
             }
         }
@@ -208,21 +208,7 @@ public abstract class OkHttpClientUtils {
      */
     public static Call asyncPost(@NotNull String url, Object object, Callback callback) throws Exception {
         String json = JSON.toJSONString(object);
-        return asyncPost(url,json,callback);
-    }
-
-    /**
-     * okhttpclient 异步post提交object对象
-     * @param url
-     * @param object
-     * @param headers
-     * @param callback
-     * @return
-     * @throws Exception
-     */
-    public static Call asynPost(@NotNull String url,Object object,Headers headers,Callback callback) throws Exception{
-        String json = JSON.toJSONString(object);
-        return asyncPost(url,json,headers,callback);
+        return asyncPost(url, json, callback);
     }
 
 
@@ -236,25 +222,27 @@ public abstract class OkHttpClientUtils {
      */
     public static Call asyncPost(@NotNull String url, String json, Callback callback) throws Exception {
         RequestBody body = RequestBody.create(JSON_TYPE_UTF8, json);
-        return asyncPost(url,body,null,callback);
+        return asyncPost(url, body, null, callback);
     }
 
     /**
-     * okhttpclient 异步post提交json对象
+     * okhttpclient 异步post提交object对象
+     *
      * @param url
-     * @param json
+     * @param object
      * @param headers
      * @param callback
-     * @return Call
+     * @return
      * @throws Exception
      */
-    public static Call asyncPost(@NotNull String url, String json , Headers headers , Callback callback) throws Exception{
-        RequestBody body = RequestBody.create(JSON_TYPE_UTF8, json);
-        return asyncPost(url,body,headers,callback);
+    public static Call asyncPost(@NotNull String url, Object object, Headers headers, Callback callback) {
+        String json = JSON.toJSONString(object);
+        return asyncPost(url, json, headers, callback);
     }
 
     /**
      * okhttpclient 异步post提交json对象
+     *
      * @param url
      * @param json
      * @param headers
@@ -262,9 +250,9 @@ public abstract class OkHttpClientUtils {
      * @return
      * @throws Exception
      */
-    public static Call asynPost(@NotNull String url,String json,Headers headers,Callback callback)throws Exception{
+    public static Call asyncPost(@NotNull String url, String json, Headers headers, Callback callback) {
         RequestBody body = RequestBody.create(JSON_TYPE_UTF8, json);
-        return asyncPost(url,body,headers,callback);
+        return asyncPost(url, body, headers, callback);
     }
 
     /**
@@ -275,13 +263,13 @@ public abstract class OkHttpClientUtils {
      * @param callback 如果Callback为空则默认只打日志
      * @return
      */
-    public static Call asyncPost(@NotNull String url, RequestBody body,Headers headers, Callback callback) throws IOException {
+    public static Call asyncPost(@NotNull String url, RequestBody body, Headers headers, Callback callback) {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(url).newBuilder();
         Request.Builder builder = new Request.Builder().url(urlBuilder.build());
-        if (Objects.nonNull(body)){
-             builder.post(body);
+        if (Objects.nonNull(body)) {
+            builder.post(body);
         }
-        if (Objects.nonNull(headers)){
+        if (Objects.nonNull(headers)) {
             builder.headers(headers);
         }
         Call call = client.newCall(builder.build());
@@ -289,7 +277,7 @@ public abstract class OkHttpClientUtils {
             callback = new LogCallBack();
         }
         call.enqueue(callback);
-        log.info("Async request! Url:{}, body:{}", url, body);
+        log.info("async request! url<{}>, bodyM<{}>", url, body);
         return call;
     }
 
@@ -300,14 +288,14 @@ public abstract class OkHttpClientUtils {
     public static class LogCallBack implements Callback {
         @Override
         public void onFailure(Call call, IOException e) {
-            log.error(String.format("url<%s> params<%s>",call.request().url(),call.request().body()), e);
+            log.error(String.format("url<%s> params<%s>", call.request().url(), call.request().body()), e);
         }
 
         @Override
         public void onResponse(Call call, Response response) throws IOException {
             InputStream is = response.body().byteStream();
             String result = IOUtils.toString(is, StandardCharsets.UTF_8);
-            log.info(String.format("url<%s> params<%s> response<%s>",call.request().url(),call.request().body(),result));
+            log.info(String.format("url<%s> params<%s> response<%s>", call.request().url(), call.request().body(), result));
         }
     }
 }
