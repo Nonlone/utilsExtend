@@ -204,11 +204,25 @@ public abstract class OkHttpClientUtils {
      * @param url
      * @param object
      * @param callback 如果Callback为空则默认只打日志
-     * @return
+     * @return Call
      */
-    public static Call asyncPostObject(@NotNull String url, Object object, Callback callback) throws Exception {
+    public static Call asyncPost(@NotNull String url, Object object, Callback callback) throws Exception {
         String json = JSON.toJSONString(object);
-        return OkHttpClientUtils.asyncPostJson(url, json, callback);
+        return asyncPost(url,json,callback);
+    }
+
+    /**
+     * okhttpclient 异步post提交object对象
+     * @param url
+     * @param object
+     * @param headers
+     * @param callback
+     * @return
+     * @throws Exception
+     */
+    public static Call asynPost(@NotNull String url,Object object,Headers headers,Callback callback) throws Exception{
+        String json = JSON.toJSONString(object);
+        return asyncPost(url,json,headers,callback);
     }
 
 
@@ -220,21 +234,37 @@ public abstract class OkHttpClientUtils {
      * @param callback 如果Callback为空则默认只打日志
      * @return
      */
-    public static Call asyncPostJson(@NotNull String url, String json, Callback callback) throws Exception {
+    public static Call asyncPost(@NotNull String url, String json, Callback callback) throws Exception {
         RequestBody body = RequestBody.create(JSON_TYPE_UTF8, json);
-        Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
+        return asyncPost(url,body,null,callback);
+    }
 
-        Call call = client.newCall(request);
-        if (callback == null) {
-            callback = new LogCallBack();
-        }
-        call.enqueue(callback);
+    /**
+     * okhttpclient 异步post提交json对象
+     * @param url
+     * @param json
+     * @param headers
+     * @param callback
+     * @return Call
+     * @throws Exception
+     */
+    public static Call asyncPost(@NotNull String url, String json , Headers headers , Callback callback) throws Exception{
+        RequestBody body = RequestBody.create(JSON_TYPE_UTF8, json);
+        return asyncPost(url,body,headers,callback);
+    }
 
-        log.info("Async request! Url:{}, FromBody:{}", url, body);
-        return call;
+    /**
+     * okhttpclient 异步post提交json对象
+     * @param url
+     * @param json
+     * @param headers
+     * @param callback
+     * @return
+     * @throws Exception
+     */
+    public static Call asynPost(@NotNull String url,String json,Headers headers,Callback callback)throws Exception{
+        RequestBody body = RequestBody.create(JSON_TYPE_UTF8, json);
+        return asyncPost(url,body,headers,callback);
     }
 
     /**
@@ -245,9 +275,16 @@ public abstract class OkHttpClientUtils {
      * @param callback 如果Callback为空则默认只打日志
      * @return
      */
-    public static Call asyncPostFromBody(@NotNull String url, FormBody body, Callback callback) throws IOException {
-        Request request = new Request.Builder().url(url).post(body).build();
-        Call call = client.newCall(request);
+    public static Call asyncPost(@NotNull String url, RequestBody body,Headers headers, Callback callback) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(url).newBuilder();
+        Request.Builder builder = new Request.Builder().url(urlBuilder.build());
+        if (Objects.nonNull(body)){
+             builder.post(body);
+        }
+        if (Objects.nonNull(headers)){
+            builder.headers(headers);
+        }
+        Call call = client.newCall(builder.build());
         if (callback == null) {
             callback = new LogCallBack();
         }
