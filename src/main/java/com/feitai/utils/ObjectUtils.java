@@ -1,6 +1,9 @@
 package com.feitai.utils;
 
+import com.alibaba.fastjson.JSON;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -32,7 +35,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
      */
     public static Object invokeGetter(Object obj, String propertyName) {
         String getterMethodName = GETTER_PREFIX + StringUtils.capitalize(propertyName);
-        return invokeMethod(obj, getterMethodName, new Class[] {}, new Object[] {});
+        return invokeMethod(obj, getterMethodName, new Class[]{}, new Object[]{});
     }
 
     /**
@@ -40,7 +43,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
      */
     public static void invokeSetter(Object obj, String propertyName, Object value) {
         String setterMethodName = SETTER_PREFIX + StringUtils.capitalize(propertyName);
-        invokeMethodByName(obj, setterMethodName, new Object[] { value });
+        invokeMethodByName(obj, setterMethodName, new Object[]{value});
     }
 
     /**
@@ -65,7 +68,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
      * 循环向上转型, 获取对象的DeclaredMethod,并强制设置为可访问.
      * 如向上转型到Object仍无法找到, 返回null.
      * 只匹配函数名。
-     *
+     * <p>
      * 用于方法需要被多次调用的情况. 先使用本函数先取得Method,然后调用Method.invoke(Object obj, Object... args)
      */
     public static Method getAccessibleMethodByName(final Object obj, final String methodName) {
@@ -83,7 +86,6 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
         }
         return null;
     }
-
 
 
     /**
@@ -108,7 +110,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
      * 循环向上转型, 获取对象的DeclaredMethod,并强制设置为可访问.
      * 如向上转型到Object仍无法找到, 返回null.
      * 匹配函数名+参数类型。
-     *
+     * <p>
      * 用于方法需要被多次调用的情况. 先使用本函数先取得Method,然后调用Method.invoke(Object obj, Object... args)
      */
     public static Method getAccessibleMethod(final Object obj, final String methodName,
@@ -140,7 +142,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
 
     /**
      * 循环向上转型, 获取对象的DeclaredField, 并强制设置为可访问.
-     *
+     * <p>
      * 如向上转型到Object仍无法找到, 返回null.
      */
     public static Field getAccessibleField(final Object obj, final String fieldName) {
@@ -174,7 +176,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
     /**
      * 通过反射, 获得Class定义中声明的父类的泛型参数的类型.
      * 如无法找到, 返回Object.class.
-     *
+     * <p>
      * 如public UserDao extends HibernateDao<User,Long>
      *
      * @param clazz clazz The class to introspect
@@ -449,6 +451,39 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
     }
 
     /**
+     * 利用反射设置指定对象的指定属性为指定的值
+     *
+     * @param field  成员变量
+     * @param object 目标对象
+     * @param value  目标值
+     */
+    public static void setFieldValue(@NonNull Field field,@NonNull Object object, @NonNull Object value) {
+        String name = field.getName();
+        try {
+            Method setter = object.getClass().getDeclaredMethod("set" + StringUtils.capitalize(name), value.getClass());
+            boolean accessablity = setter.isAccessible();
+            setter.setAccessible(true);
+            setter.invoke(object, value);
+            setter.setAccessible(accessablity);
+            return;
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            if(log.isDebugEnabled()){
+                log.debug(String.format("setValue setter class<%s> field<%s> value<%s> error %s", object.getClass(), name, value,e.getMessage()));
+            }
+            try {
+                boolean accessablity = field.isAccessible();
+                field.setAccessible(true);
+                field.set(object, value);
+                field.setAccessible(accessablity);
+                return;
+            } catch (IllegalAccessException e1) {
+                log.error(String.format("setValue field class<%s> field<%s> value<%s>", object.getClass(), name, value), e1);
+            }
+        }
+        log.warn(String.format("setValue not set class<%s> field<%s> value<%s>", object.getClass(), name, value));
+    }
+
+    /**
      * 获取利用反射获取类里面的值和名称
      *
      * @param obj
@@ -479,11 +514,11 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
     public static Map<String, String> objectToMapString(String timeFormatStr, Object obj, String... excludeFields) throws IllegalAccessException {
         Map<String, String> map = new HashMap<String, String>();
 
-        if (excludeFields.length!=0){
+        if (excludeFields.length != 0) {
             List<String> list = Arrays.asList(excludeFields);
             objectTransfer(timeFormatStr, obj, map, list);
-        }else{
-            objectTransfer(timeFormatStr, obj, map,null);
+        } else {
+            objectTransfer(timeFormatStr, obj, map, null);
         }
         return map;
     }
@@ -539,6 +574,172 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
         }
         return map;
 
+    }
+
+    /**
+     * 递归遍历对象的所有基础成员变量，并进行操作
+     *
+     * @param object
+     * @param fieldWalkProcessor
+     */
+    public static Object fieldWalkProcess(@NonNull Object object, @NonNull FieldWalkProcessor fieldWalkProcessor) {
+        Class<?> classOfT = object.getClass();
+        while (classOfT != Object.class) {
+            Field[] fields = classOfT.getDeclaredFields();
+            for (Field field : fields) {
+                Class<?> fieldClass = field.getType();
+                if (log.isDebugEnabled()) {
+                    log.debug("fieldWalkProcess  class<{}> field<{}>", classOfT.getName(), field.getName());
+                }
+                boolean accessFlag = field.isAccessible();
+                field.setAccessible(true);
+                try {
+                    Method getMethod = classOfT.getMethod("get" + StringUtils.capitalize(field.getName()));
+                    getMethod.setAccessible(true);
+                    Object value = getMethod.invoke(object);
+                    if (fieldWalkProcessor.isEffected(field, object)) {
+                        if ((fieldClass.getName().startsWith("java.lang") || fieldClass.isPrimitive())) {
+                            // 基础类型
+                            Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
+                            setFieldValue(field, object, result);
+                        } else if (!fieldClass.getName().startsWith("java.lang")
+                                && !Modifier.isStatic(field.getModifiers())) {
+                            // 复合类型，获取对象执行对应策略
+                            if (!Collection.class.isAssignableFrom(fieldClass)
+                                    && !Map.class.isAssignableFrom(fieldClass)
+                                    && !fieldClass.isArray()) {
+                                // 对象类型
+                                if (value != null) {
+                                    //值非空，步入递归
+                                    fieldWalkProcess(value, fieldWalkProcessor);
+                                } else {
+                                    //空值，尝试提供处理
+                                    Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
+                                    if(result!=null) {
+                                        setFieldValue(field, object, result);
+                                    }
+                                }
+                            } else if (Collection.class.isAssignableFrom(fieldClass)) {
+                                // 集合类型
+                                if (!CollectionUtils.isEmpty((Collection) value)) {
+                                    // 非空集合，步入递归
+                                    Class<?> classOfCollection = ObjectUtils.getGenericClass(field.getGenericType());
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("fieldWalkProcess classOfCollection class<{}> field<{}>", classOfCollection.getName(), field.getName());
+                                    }
+                                    Collection valueCollection = (Collection) value;
+                                    Iterator iterator = valueCollection.iterator();
+                                    while (iterator.hasNext()) {
+                                        Object obj = iterator.next();
+                                        if (log.isDebugEnabled()) {
+                                            log.debug("fieldWalkProcess classOfCollection class<{}> field<{}> value<{}>", classOfCollection.getName(), field.getName(), JSON.toJSONString(obj));
+                                        }
+                                        fieldWalkProcess(classOfCollection.cast(obj), fieldWalkProcessor);
+                                    }
+                                } else {
+                                    //空值，尝试提供处理
+                                    Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
+                                    if(result!=null){
+                                        setFieldValue(field, object, result);
+                                    }
+                                }
+                            } else if (fieldClass.isArray()) {
+                                // 数组类型
+                                if (value != null) {
+                                    // 非空，步入递归
+                                    Class<?> classOfArray = field.getType().getComponentType();
+                                    int length = Array.getLength(value);
+                                    for (int i = 0; i < length; i++) {
+                                        Object obj = Array.get(value, i);
+                                        if (log.isDebugEnabled()) {
+                                            log.debug("DaShuCodeUtils traversedFieldWithAnnotationOperator classOfCollection class<{}> field<{}> value<{}>", classOfArray.getName(), field.getName(), JSON.toJSONString(obj));
+                                        }
+                                        fieldWalkProcess(classOfArray.cast(obj), fieldWalkProcessor);
+                                    }
+                                } else {
+                                    //空值，尝试提供处理
+                                    Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
+                                    if(result!=null){
+                                        setFieldValue(field, object, result);
+                                    }
+                                }
+                            } else if (Map.class.isAssignableFrom(fieldClass)) {
+                                if (!CollectionUtils.isEmpty((Map) value)) {
+                                    ((Map) value).forEach((k, v) -> {
+                                        Map.Entry entry = new Map.Entry() {
+
+                                            private Object key = k;
+
+                                            private Object value = v;
+
+                                            @Override
+                                            public Object getKey() {
+                                                return key;
+                                            }
+
+                                            @Override
+                                            public Object getValue() {
+                                                return value;
+                                            }
+
+                                            @Override
+                                            public Object setValue(Object value) {
+                                                return null;
+                                            }
+                                        };
+                                        fieldWalkProcess(entry, fieldWalkProcessor);
+                                    });
+                                } else {
+                                    //空值，尝试提供处理
+                                    Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
+                                    setFieldValue(field, object, result);
+                                }
+                            }
+                            log.warn("fieldWalkProcess not handle  class<{}> field<{}>", classOfT.getName(), field.getName());
+                        }
+                    } else {
+                        // 判断不生效
+                        if (log.isDebugEnabled()) {
+                            log.debug("fieldWalkProcess  class<{}> field<{}> not effected", classOfT.getName(), field.getName());
+                        }
+                    }
+                } catch (NoSuchMethodException e) {
+                    // 方法不存在
+                    log.error(String.format("traversedFieldWithAnnotationOperator getMethod class<%s> field<%s>", classOfT.getName(), field.getName()), e);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    // 方法调用出错
+                    log.error(String.format("traversedFieldWithAnnotationOperator getMethod invoke class<%s> field<%s>", classOfT.getName(), field.getName()), e);
+                }
+                field.setAccessible(accessFlag);
+            }
+            // 跳到父类
+            classOfT = classOfT.getSuperclass();
+        }
+        return object;
+    }
+
+
+    /**
+     * 成员变量操作接口
+     */
+    public interface FieldWalkProcessor {
+
+        /**
+         * 是否生效操作
+         *
+         * @param field
+         * @param object
+         * @return
+         */
+        boolean isEffected(Field field, Object object);
+
+        /**
+         * 成员操作
+         *
+         * @param field
+         * @param object
+         */
+        Object process(Field field, Object object, FieldWalkProcessor fieldWalkProcessor);
     }
 
 
