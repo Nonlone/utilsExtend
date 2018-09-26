@@ -3,7 +3,6 @@ package com.feitai.utils;
 import com.alibaba.fastjson.JSON;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -396,15 +395,22 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
      */
     public static Object getFieldValue(Object object, String fieldName) {
         Object result = null;
-        Field field = getField(object, fieldName);
-        if (field != null) {
-            field.setAccessible(true);
-            try {
-                result = field.get(object);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                log.error(String.format("getFieldValue object<%s> fieldName<%s>", object.toString(), fieldName), e);
-                throw new RuntimeException(e);
+        try {
+            Method getter = getAccessibleMethodByName(object, "get" + com.feitai.utils.StringUtils.capitalize(fieldName));
+            if (getter != null) {
+                result = getter.invoke(object);
+            } else {
+                Field field = getAccessibleField(object, fieldName);
+                if (field != null) {
+                    result = field.get(object);
+                } else {
+                    // 无法获取源字符值
+                    log.error(String.format("getFieldValue class<%s> field<%s>  is null", object.getClass(), field.getName()));
+                }
             }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            log.error(String.format("getFieldValue object<%s> fieldName<%s> error", object.toString(), fieldName), e);
+            throw new RuntimeException(e);
         }
         return result;
     }
@@ -457,7 +463,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
      * @param object 目标对象
      * @param value  目标值
      */
-    public static void setFieldValue(@NonNull Field field,@NonNull Object object, @NonNull Object value) {
+    public static void setFieldValue(@NonNull Field field, @NonNull Object object, @NonNull Object value) {
         String name = field.getName();
         try {
             Method setter = object.getClass().getDeclaredMethod("set" + StringUtils.capitalize(name), value.getClass());
@@ -467,8 +473,8 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
             setter.setAccessible(accessablity);
             return;
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            if(log.isDebugEnabled()){
-                log.debug(String.format("setValue setter class<%s> field<%s> value<%s> error %s", object.getClass(), name, value,e.getMessage()));
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("setValue setter class<%s> field<%s> value<%s> error %s", object.getClass(), name, value, e.getMessage()));
             }
             try {
                 boolean accessablity = field.isAccessible();
@@ -615,7 +621,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                                 } else {
                                     //空值，尝试提供处理
                                     Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
-                                    if(result!=null) {
+                                    if (result != null) {
                                         setFieldValue(field, object, result);
                                     }
                                 }
@@ -639,7 +645,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                                 } else {
                                     //空值，尝试提供处理
                                     Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
-                                    if(result!=null){
+                                    if (result != null) {
                                         setFieldValue(field, object, result);
                                     }
                                 }
@@ -659,7 +665,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                                 } else {
                                     //空值，尝试提供处理
                                     Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
-                                    if(result!=null){
+                                    if (result != null) {
                                         setFieldValue(field, object, result);
                                     }
                                 }
