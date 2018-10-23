@@ -1,4 +1,4 @@
-package com.feitai.utils;
+package com.feitai.utils.encode;
 
 
 import org.apache.commons.io.FileUtils;
