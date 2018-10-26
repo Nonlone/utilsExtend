@@ -74,8 +74,11 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     public static String formatJson(String jsonStr){
         String params = "";
         JSONObject object = JSONObject.parseObject(jsonStr);
-        params += StringEscapeUtils.unescapeJava(JSONObject.toJSONString(object)).replaceAll("\\\\","")
-                .replaceAll("\\\\\\\\","");
+        params += StringEscapeUtils.unescapeJava(JSONObject.toJSONString(object))
+                .replaceAll("\\\\","")
+                .replaceAll("\\\\\\\\","").replaceAll("\\\"","\"")
+                .replaceAll(":\"\\{",":{")
+        .replaceAll("}\"","}");
         return params;
     }
 }
