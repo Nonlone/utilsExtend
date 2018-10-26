@@ -24,6 +24,7 @@ import java.net.URLEncoder;
  * 
  * @author calvin
  */
+@Deprecated
 public class Encodes {
 
 	private static final String DEFAULT_URL_ENCODING = "UTF-8";

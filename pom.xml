@@ -6,9 +6,11 @@
 
     <groupId>com.feitai</groupId>
     <artifactId>utils</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>${app.version}</version>
 
     <properties>
+        <version>1.0</version>
+        <app.version>${version}-SNAPSHOT</app.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
@@ -24,6 +26,42 @@
         <guava.version>25.0-jre</guava.version>
         <javax-validation.version>2.0.1.Final</javax-validation.version>
     </properties>
+
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <properties>
+                <app.version>${version}</app.version>
+            </properties>
+        </profile>
+    </profiles>
+
+
+    <repositories>
+        <repository>
+            <id>feitai-maven</id>
+            <name>feitai-maven</name>
+            <url>http://maven.feitai.info/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>feitai-release</id>
+            <url>http://maven.feitai.info/nexus/content/repositories/feitai-release/</url>
+        </repository>
+        <snapshotRepository>
+            <id>feitai-snapshot</id>
+            <url>http://maven.feitai.info/nexus/content/repositories/feitai-snapshot/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <dependencies>
 
@@ -130,8 +168,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -148,6 +186,7 @@
                 </executions>
             </plugin>
         </plugins>
+
     </build>
 
 
