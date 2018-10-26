@@ -593,6 +593,10 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
         while (classOfT != Object.class) {
             Field[] fields = classOfT.getDeclaredFields();
             for (Field field : fields) {
+                //如果是最后的field跳过扫描
+                if(Modifier.isFinal(field.getModifiers())){
+                    continue;
+                }
                 Class<?> fieldClass = field.getType();
                 if (log.isDebugEnabled()) {
                     log.debug("fieldWalkProcess  class<{}> field<{}>", classOfT.getName(), field.getName());
