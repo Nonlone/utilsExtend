@@ -1,6 +1,6 @@
 package com.feitai.utils.encrypt;
 
-import com.feitai.utils.Base64Utils;
+import com.feitai.utils.encode.Base64Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 

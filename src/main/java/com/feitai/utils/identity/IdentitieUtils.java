@@ -13,6 +13,7 @@ import java.util.UUID;
  * 
  * @author calvin
  */
+@Deprecated
 public abstract class IdentitieUtils {
 
 	private static SecureRandom random = new SecureRandom();

@@ -29,6 +29,18 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
 
     private static Logger logger = LoggerFactory.getLogger(ObjectUtils.class);
 
+
+    /**
+     * 通过JSON序列化进行深复制
+     *
+     * @param t
+     * @param <T>
+     * @return
+     */
+    public static <T> T deepCloneByJSON(T t) {
+        return (T) JSON.parseObject(JSON.toJSONString(t), t.getClass());
+    }
+
     /**
      * 调用Getter方法.
      */
@@ -183,16 +195,12 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
      * @return the index generic declaration, or Object.class if cannot be determined
      */
     public static Class getClassGenricType(final Class clazz, final int index) {
-
         Type genType = clazz.getGenericSuperclass();
-
         if (!(genType instanceof ParameterizedType)) {
             logger.warn(clazz.getSimpleName() + "'s superclass not ParameterizedType");
             return Object.class;
         }
-
         Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
-
         if ((index >= params.length) || (index < 0)) {
             logger.warn("Index: " + index + ", Size of " + clazz.getSimpleName() + "'s Parameterized Type: "
                     + params.length);
@@ -202,7 +210,6 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
             logger.warn(clazz.getSimpleName() + " not set the actual class on superclass generic parameter");
             return Object.class;
         }
-
         return (Class) params[index];
     }
 
@@ -705,7 +712,9 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                                     setFieldValue(field, object, result);
                                 }
                             }
-                            log.warn("fieldWalkProcess not handle  class<{}> field<{}>", classOfT.getName(), field.getName());
+                            if (log.isDebugEnabled()) {
+                                log.warn("fieldWalkProcess not handle  class<{}> field<{}>", classOfT.getName(), field.getName());
+                            }
                         }
                     } else {
                         // 判断不生效

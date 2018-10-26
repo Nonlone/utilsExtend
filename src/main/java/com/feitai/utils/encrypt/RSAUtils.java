@@ -1,6 +1,6 @@
 package com.feitai.utils.encrypt;
 
-import com.feitai.utils.Base64Utils;
+import com.feitai.utils.encode.Base64Utils;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
