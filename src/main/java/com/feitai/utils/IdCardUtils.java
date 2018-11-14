@@ -21,7 +21,7 @@ import java.util.Map;
  * @version 1.0, 2010-06-17
  */
 @Slf4j
-public class IdCardUtils extends StringUtils {
+public abstract class IdCardUtils extends StringUtils {
 
     /**
      * 中国公民身份证号码最小长度。
