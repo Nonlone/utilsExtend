@@ -601,7 +601,8 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
             Field[] fields = classOfT.getDeclaredFields();
             for (Field field : fields) {
                 //如果是final或static修饰的字段则不扫描
-                if(Modifier.isFinal(field.getModifiers())||Modifier.isStatic(field.getModifiers())){
+                if(Modifier.isFinal(field.getModifiers())
+                        ||Modifier.isStatic(field.getModifiers())){
                     continue;
                 }
                 Class<?> fieldClass = field.getType();
