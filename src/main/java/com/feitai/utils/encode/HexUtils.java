@@ -1,6 +1,5 @@
 package com.feitai.utils.encode;
 
-import com.feitai.utils.identity.Exceptions;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -22,7 +21,7 @@ public abstract class HexUtils {
         try {
             return Hex.decodeHex(input.toCharArray());
         } catch (DecoderException e) {
-            log.error(String.format("decode error %s", e.getMessage()), e);
+            log.error("Decode Error data:{}", input, e);
         }
         return null;
     }

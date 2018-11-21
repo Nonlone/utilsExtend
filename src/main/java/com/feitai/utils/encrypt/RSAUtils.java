@@ -205,25 +205,4 @@ public abstract class RSAUtils {
         out.close();
         return encryptedData;
     }
-
-
-    public static void main(String[] args) {
-
-        String privateKey = "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAKM2m1DwZB7pNZ/jCjtNjTIf/uBBz5RTAIXce4C0NWZI3NCZMwjhGHU3TWORTWiR4K0xpaQMeVPierMu9DdAStQhFGOHwDwVEwZoZEdRtcFCAU44z559uii6uj5h5f9n7CpAj6XuCpuIw5OaCnbezYigW4oZlkwbb23YCsbCTYKXAgMBAAECgYAvIXy2YcS3vGZ01k5FE777Q4wJXFfCIDndbe7oGqH0+INzZVn8bWvvpVmer/3nfYCg4t5PQh7jH1qJVbzGG7W/l+zVhxPD8JZUSSCDpkG5tSN/WjudEs4jFOrBwHEmmQhOVxNVbhHr04mYc2EjFc6cRszE+cr+jL//EJ2m2KHXuQJBANSJIDyI2HLzOAZYIZLpMiadmw21+fc0TnhoGJax8zeSEjJHCKTVfNghnJMB4sz4LEp4r8Vxq/9qC/ftOVA8e5MCQQDEl08y53wICJvkzYwRNujOkP7UN1gQk9Blp+MCBDAyC0su2QXN489caEkfqIsaGkQ5hOyAYITJyFLWrWgiUKdtAkADljTXELAmcHhXkxEt+4V/JVXCi3mmdFmGqqsPj/08yNhJxO0eawPqWdbcnEGJl/6XWyYMPPjcHJwLGRPIiNzFAkB0uut57F2HX6VBbJNYvWPrE8lcNSiDX2GEmvV+AwKjFHWl8ZMyt6wu0HVq6Ob/rs0H4leTurveHKajdf+5MG7ZAkBW22tEY46hCLY8A//wTzj/NcDSqM/sF2LB3b5w9IWFBubwjYBA3jKR74zmqGq6NXk4YPaOQkdTgkjqkl2cSBSd";
-
-        String publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCjNptQ8GQe6TWf4wo7TY0yH/7gQc+UUwCF3HuAtDVmSNzQmTMI4Rh1N01jkU1okeCtMaWkDHlT4nqzLvQ3QErUIRRjh8A8FRMGaGRHUbXBQgFOOM+efboouro+YeX/Z+wqQI+l7gqbiMOTmgp23s2IoFuKGZZMG29t2ArGwk2ClwIDAQAB";
-
-        try {
-            byte[] bytes = RSAUtils.encryptByPublicKey(
-                    "{\"data\": {\"password\": \"a123456\",\"phone\": \"13800138000\"}}".getBytes(), publicKey);
-            System.out.println(Base64Utils.encodeFromByteArray(bytes));
-
-            System.out.println(new String(RSAUtils.decryptByPrivateKey(
-                    "hyLdzlofqmjl5cfTUb26h107gC3MznWEJjdaKinLGk1XSevVI4RWduasgAQ+Sgk+UYL3JSlMh1Is/sQoOEVCsg8U+LWvMZ73gyijewyW0VymJ/qjoLZWBpWsLZcAwchEuc6IGoKOnAT66xWiuwI4cnhtTBY+/nPvgLKBvf/pf/U=",
-                    privateKey)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 }

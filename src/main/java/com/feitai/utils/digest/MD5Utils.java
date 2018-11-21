@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
 
 /**
  * MD5摘要算法
@@ -49,7 +48,7 @@ public abstract class MD5Utils extends AbstractDigestUtils {
             // 转换为16进制字符串
             return bytesToHex(md5Byte);
         } catch (Exception e) {
-            log.error(String.format("md5 error %s", e.getMessage()));
+            log.error("Md5 Error data:{}", data, e);
         }
         return null;
     }
