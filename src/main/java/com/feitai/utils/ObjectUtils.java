@@ -412,7 +412,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                     result = field.get(object);
                 } else {
                     // 无法获取源字符值
-                    log.error(String.format("getFieldValue class<%s> field<%s>  is null", object.getClass(), field.getName()));
+                    log.error(String.format("getFieldValue class<%s> field<%s>  is null", object.getClass(), fieldName));
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
