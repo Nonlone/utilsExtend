@@ -2,13 +2,37 @@ package com.feitai.utils.digest;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.security.MessageDigest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
 
 /**
  * MD5摘要算法
  */
 @Slf4j
-public abstract  class MD5Utils {
+public abstract class MD5Utils extends AbstractDigestUtils {
+
+    /**
+     * 对输入流进行md5散列.
+     */
+    public static byte[] md5(InputStream input) throws IOException, GeneralSecurityException {
+        return digest(input, MD5);
+    }
+
+    /**
+     * 对输入字符串进行sha1散列.
+     */
+    public static byte[] md5(byte[] input) throws GeneralSecurityException {
+        return digest(input, MD5, null, 1);
+    }
+
+    public static byte[] md5(byte[] input, byte[] salt) throws GeneralSecurityException {
+        return digest(input, MD5, salt, 1);
+    }
+
+    public static byte[] md5(byte[] input, byte[] salt, int iterations) throws GeneralSecurityException {
+        return digest(input, MD5, salt, iterations);
+    }
 
     /**
      * 生成MD5
@@ -16,37 +40,18 @@ public abstract  class MD5Utils {
      * @param data
      * @return
      */
-    public static String generate(String data) {
-        String md5 = "";
+    public static String md5(String data) {
         try {
-            // 创建一个md5算法对象
-            MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] messageByte = data.getBytes("UTF-8");
             // 获得MD5字节数组,16*8=128位
-            byte[] md5Byte = md.digest(messageByte);
+            byte[] md5Byte = md5(messageByte);
             // 转换为16进制字符串
-            md5 = bytesToHex(md5Byte);
+            return bytesToHex(md5Byte);
         } catch (Exception e) {
-            log.error(String.format("md5 error %s", e.getMessage()));
+            log.error("Md5 Error data:{}", data, e);
         }
-        return md5;
+        return null;
     }
 
-    // 二进制转十六进制
-    protected static String bytesToHex(byte[] bytes) {
-        StringBuffer hexStr = new StringBuffer();
-        int num;
-        for (int i = 0; i < bytes.length; i++) {
-            num = bytes[i];
-            if (num < 0) {
-                num += 256;
-            }
-            if (num < 16) {
-                hexStr.append("0");
-            }
-            hexStr.append(Integer.toHexString(num));
-        }
-        return hexStr.toString().toUpperCase();
-    }
 
 }

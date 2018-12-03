@@ -1,8 +1,10 @@
 package com.feitai.utils.encrypt;
 
-import com.feitai.utils.Base64Utils;
+import com.feitai.utils.encode.Base64Utils;
+import com.google.common.io.BaseEncoding;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -16,6 +18,7 @@ import java.util.Arrays;
  * AES 加密类
  */
 @Slf4j
+@SuppressWarnings("AlibabaRemoveCommentedCode")
 public abstract class AESUtils {
 
     /**
@@ -107,28 +110,71 @@ public abstract class AESUtils {
         return cipher.doFinal(content);
     }
 
-    /**
-     * AES 解密 Base64位编码
-     *
-     * @param content
-     * @param key
-     * @return
-     * @throws UnsupportedEncodingException
-     * @throws GeneralSecurityException
-     */
-    public static String aesDecryptFromBase64(String content, String key) throws UnsupportedEncodingException, GeneralSecurityException {
-        byte[] base64DecodeStr = Base64Utils.decodeFromString(content);
+    public static byte[] aesEncryptWithECBAndPKCS7(String content, String pkey) throws UnsupportedEncodingException, GeneralSecurityException {
+        SecretKeySpec key = new SecretKeySpec(pkey.getBytes(), "AES");
+        // "算法/模式/补码方式"
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS7Padding");
+        //IvParameterSpec iv = new IvParameterSpec(IV.getBytes());
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        byte[] encrypted = cipher.doFinal(content.getBytes("UTF-8"));
+        // 加密
+        return encrypted;
+    }
+
+    public static String aesEncryptWithECBAndPKCS7ToBase64(String content, String pkey) throws UnsupportedEncodingException, GeneralSecurityException {
+        byte[] aesEncrypt = aesEncryptWithECBAndPKCS7(content, pkey);
         if(log.isDebugEnabled()) {
-            log.debug("aesDecryptFromBase64 String:" + Arrays.toString(base64DecodeStr));
+            log.debug("aesEncryptWithECBAndPKCS7 String:" + Arrays.toString(aesEncrypt));
         }
-        byte[] aesDecode = aesDecrypt(base64DecodeStr, key);
+        String base64EncodeStr = BaseEncoding.base64().encode(aesEncrypt);
+        if(log.isDebugEnabled()) {
+            log.debug("aesEncryptWithECBAndPKCS7ToBase64 base64EncodeStr:" + base64EncodeStr);
+        }
+        return base64EncodeStr;
+    }
+
+
+    /**
+     * 解密 128位
+     *
+     * @param content 待解密内容
+     * @param pkey    解密密钥
+     * @return
+     */
+    public static byte[] aesDecryptWithECBAndPKCS7(byte[] content, String pkey) throws UnsupportedEncodingException, GeneralSecurityException {
+        SecretKeySpec key = new SecretKeySpec(pkey.getBytes(), "AES");
+        // 创建密码器
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS7Padding");
+        // 初始化
+        cipher.init(Cipher.DECRYPT_MODE, key);
+        byte[] result = cipher.doFinal(content);
+        // 解密
+        return result;
+    }
+
+    /**
+     * @param content base64处理过的字符串
+     * @param pkey
+     * @return String    返回类型
+     * @throws Exception
+     * @throws
+     * @Title: aesDecodeStr
+     * @Description: 解密 失败将返回NULL
+     */
+    public static String aesDecryptWithECBAndPKCS7FromBase64(String content, String pkey) throws UnsupportedEncodingException, GeneralSecurityException {
+        byte[] base64DecodeStr = BaseEncoding.base64().decode(content);
+        if(log.isDebugEnabled()) {
+            log.debug("aesDecryptWithECBAndPKCS7 String:" + Arrays.toString(base64DecodeStr));
+        }
+        byte[] aesDecode = aesDecryptWithECBAndPKCS7(base64DecodeStr, pkey);
         if (aesDecode == null) {
             return null;
         }
         String result = new String(aesDecode, "UTF-8");
         if(log.isDebugEnabled()) {
-            log.debug("aesDecryptFromBase64 result:" + result);
+            log.debug("aesDecryptWithECBAndPKCS7FromBase64 result:" + result);
         }
         return result;
     }
+
 }
