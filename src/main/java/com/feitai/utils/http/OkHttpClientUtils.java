@@ -2,6 +2,7 @@ package com.feitai.utils.http;
 
 import com.alibaba.fastjson.JSON;
 import com.feitai.utils.CollectionUtils;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.io.Charsets;
@@ -21,17 +22,18 @@ public abstract class OkHttpClientUtils {
 
     public static final MediaType JSON_TYPE_UTF8 = MediaType.parse("application/json; charset=utf-8");
 
-    public static final MediaType JSON_TYPE = MediaType.parse("application/json");
-
     private static OkHttpClient client = new OkHttpClient.Builder()
             .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY_NOT_HEAD))
             .connectTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .build();
 
-
-    protected static OkHttpClient getClient(){
+    public static OkHttpClient getClient() {
         return client;
+    }
+
+    public static void setClient(OkHttpClient client) {
+        OkHttpClientUtils.client = client;
     }
 
     /**
@@ -107,7 +109,7 @@ public abstract class OkHttpClientUtils {
         }
         //这里RequestBody已经包含了MediaType
 
-        return getClient().newCall(builder.build()).execute();
+        return client.newCall(builder.build()).execute();
     }
 
     /**
@@ -200,7 +202,7 @@ public abstract class OkHttpClientUtils {
         if (headers != null) {
             requestBuilder.headers(headers);
         }
-        return getClient().newCall(requestBuilder.build()).execute();
+        return client.newCall(requestBuilder.build()).execute();
     }
 
     /**
@@ -277,7 +279,7 @@ public abstract class OkHttpClientUtils {
         if (Objects.nonNull(headers)) {
             builder.headers(headers);
         }
-        Call call = getClient().newCall(builder.build());
+        Call call = client.newCall(builder.build());
         if (callback == null) {
             callback = new LogCallBack();
         }
