@@ -29,6 +29,11 @@ public abstract class OkHttpClientUtils {
             .readTimeout(60, TimeUnit.SECONDS)
             .build();
 
+
+    protected static OkHttpClient getClient(){
+        return client;
+    }
+
     /**
      * 以“application/json” post提交数据，提交对象为object
      *
@@ -102,7 +107,7 @@ public abstract class OkHttpClientUtils {
         }
         //这里RequestBody已经包含了MediaType
 
-        return client.newCall(builder.build()).execute();
+        return getClient().newCall(builder.build()).execute();
     }
 
     /**
@@ -195,7 +200,7 @@ public abstract class OkHttpClientUtils {
         if (headers != null) {
             requestBuilder.headers(headers);
         }
-        return client.newCall(requestBuilder.build()).execute();
+        return getClient().newCall(requestBuilder.build()).execute();
     }
 
     /**
@@ -272,7 +277,7 @@ public abstract class OkHttpClientUtils {
         if (Objects.nonNull(headers)) {
             builder.headers(headers);
         }
-        Call call = client.newCall(builder.build());
+        Call call = getClient().newCall(builder.build());
         if (callback == null) {
             callback = new LogCallBack();
         }
