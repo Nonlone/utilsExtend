@@ -436,9 +436,12 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                 field = clazz.getDeclaredField(fieldName);
                 break;
             } catch (NoSuchFieldException e) {
-                log.error(String.format("getField object<%s> fieldName<%s>", object.toString(), fieldName), e);
-                throw new RuntimeException(e);
+                log.debug(String.format("getField object<%s> fieldName<%s>", object.toString(), fieldName));
             }
+        }
+        // 获取不了Field
+        if(field==null){
+            throw new RuntimeException(new NoSuchMethodException(fieldName));
         }
         return field;
     }
