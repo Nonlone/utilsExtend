@@ -2,6 +2,7 @@ package com.feitai.utils.http;
 
 import com.alibaba.fastjson.JSON;
 import com.feitai.utils.CollectionUtils;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.io.Charsets;
@@ -21,13 +22,19 @@ public abstract class OkHttpClientUtils {
 
     public static final MediaType JSON_TYPE_UTF8 = MediaType.parse("application/json; charset=utf-8");
 
-    public static final MediaType JSON_TYPE = MediaType.parse("application/json");
-
     private static OkHttpClient client = new OkHttpClient.Builder()
             .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY_NOT_HEAD))
             .connectTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .build();
+
+    public static OkHttpClient getClient() {
+        return client;
+    }
+
+    public static void setClient(OkHttpClient client) {
+        OkHttpClientUtils.client = client;
+    }
 
     /**
      * 以“application/json” post提交数据，提交对象为object
