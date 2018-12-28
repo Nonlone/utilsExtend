@@ -1,10 +1,10 @@
 package com.feitai.utils.http;
 
-import com.feitai.utils.ObjectUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
-import okio.Buffer;
+import okhttp3.Interceptor;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.*;
