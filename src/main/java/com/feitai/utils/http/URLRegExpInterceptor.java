@@ -1,5 +1,6 @@
 package com.feitai.utils.http;
 
+import com.feitai.utils.ObjectUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -126,7 +127,10 @@ public class URLRegExpInterceptor implements Interceptor {
         // response后处理
         if (isAfterResponseProcessed()) {
             for (InterceptorProcessor processor : processorList) {
-                response = processor.process(request, response);
+                Response newResponse = processor.process(request, response);
+                if (Objects.nonNull(newResponse)) {
+                    response = newResponse;
+                }
             }
         }
 
