@@ -4,7 +4,7 @@
 
     <groupId>com.feitai</groupId>
     <artifactId>utils</artifactId>
-    <version>1.4-SNAPSHOT</version>
+    <version>1.4.0-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,6 +26,14 @@
         <javax-validation.version>2.0.1.Final</javax-validation.version>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>hotfix</id>
+            <properties>
+                <tag.version>${maven.build.timestamp}.hotfix</tag.version>
+            </properties>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>
@@ -156,6 +164,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -164,6 +173,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -180,10 +190,37 @@
                 <version>3.0.0</version>
                 <executions>
                     <execution>
-                        <id>released-version</id>
+                        <id>parse-version</id>
+                        <phase>verify</phase>
                         <goals>
-                            <goal>released-version</goal>
+                            <goal>parse-version</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <echo>Major: ${parsedVersion.majorVersion}</echo>
+                                <echo>Minor: ${parsedVersion.minorVersion}</echo>
+                                <echo>Incremental: ${parsedVersion.incrementalVersion}</echo>
+                                <echo>Qualifier: ${parsedVersion.qualifier}</echo>
+                                <echo>BuildNumber: ${parsedVersion.buildNumber}</echo>
+                                <echo>NextMajorVersion: ${parsedVersion.nextMajorVersion}</echo>
+                                <echo>NextMinorVersion: ${parsedVersion.nextMinorVersion}</echo>
+                                <echo>NextIncrementalVersion: ${parsedVersion.nextIncrementalVersion}</echo>
+                                <echo>NextBuildNumber: ${parsedVersion.buildNumber}</echo>
+                            </tasks>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
