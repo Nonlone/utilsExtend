@@ -3,7 +3,6 @@ package com.feitai.utils;
 import com.alibaba.fastjson.JSON;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,8 +123,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
      * <p>
      * 用于方法需要被多次调用的情况. 先使用本函数先取得Method,然后调用Method.invoke(Object obj, Object... args)
      */
-    public static Method getAccessibleMethod(final Object obj, final String methodName,
-                                             final Class<?>... parameterTypes) {
+    public static Method getAccessibleMethod(final Object obj, final String methodName,final Class<?>... parameterTypes) {
         Validate.notNull(obj, "object can't be null");
         Validate.notBlank(methodName, "methodName can't be blank");
 
@@ -403,7 +401,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
     public static Object getFieldValue(Object object, String fieldName) {
         Object result = null;
         try {
-            Method getter = getAccessibleMethodByName(object, "get" + com.feitai.utils.StringUtils.capitalize(fieldName));
+            Method getter = getAccessibleMethodByName(object, "get" + StringUtils.capitalize(fieldName));
             if (getter != null) {
                 result = getter.invoke(object);
             } else {
