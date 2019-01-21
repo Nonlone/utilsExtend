@@ -617,30 +617,25 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                     getMethod.setAccessible(true);
                     Object value = getMethod.invoke(object);
                     if (fieldWalkProcessor.isEffected(field, object)) {
-                        if ((fieldClass.getName().startsWith("java.lang") || fieldClass.isPrimitive())) {
-                            // 基础类型
-                            Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
+                        // 集合类型
+                        Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
+                        if (result != null) {
+                            //非空值，回写成员变量
                             setFieldValue(field, object, result);
-                        } else if (!fieldClass.getName().startsWith("java.lang")
+                        }
+                        if (!fieldClass.getName().startsWith("java.lang")
                                 && !Modifier.isStatic(field.getModifiers())) {
                             // 复合类型，获取对象执行对应策略
                             if (!Collection.class.isAssignableFrom(fieldClass)
                                     && !Map.class.isAssignableFrom(fieldClass)
                                     && !fieldClass.isArray()) {
-                                // 对象类型
-                                if (value != null) {
-                                    //值非空，步入递归
+                                // 对象类型,判断步入递归
+                                if(fieldWalkProcessor.isStepIn(field,object)) {
                                     fieldWalkProcess(value, fieldWalkProcessor);
-                                } else {
-                                    //空值，尝试提供处理
-                                    Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
-                                    if (result != null) {
-                                        setFieldValue(field, object, result);
-                                    }
                                 }
                             } else if (Collection.class.isAssignableFrom(fieldClass)) {
                                 // 集合类型
-                                if (!CollectionUtils.isEmpty((Collection) value)) {
+                                if(!CollectionUtils.isEmpty((Collection) value) && fieldWalkProcessor.isStepIn(field,object)){
                                     // 非空集合，步入递归
                                     Class<?> classOfCollection = ObjectUtils.getGenericClass(field.getGenericType());
                                     if (log.isDebugEnabled()) {
@@ -655,17 +650,11 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                                         }
                                         fieldWalkProcess(classOfCollection.cast(obj), fieldWalkProcessor);
                                     }
-                                } else {
-                                    //空值，尝试提供处理
-                                    Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
-                                    if (result != null) {
-                                        setFieldValue(field, object, result);
-                                    }
                                 }
                             } else if (fieldClass.isArray()) {
                                 // 数组类型
-                                if (value != null) {
-                                    // 非空，步入递归
+                                if (value != null  && Array.getLength(value)>0 && fieldWalkProcessor.isStepIn(field,object)) {
+                                    // 数组非空，步入递归
                                     Class<?> classOfArray = field.getType().getComponentType();
                                     boolean isPrimitivedClass = classOfArray.isPrimitive();
                                     int length = Array.getLength(value);
@@ -681,15 +670,9 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                                             fieldWalkProcess(classOfArray.cast(obj), fieldWalkProcessor);
                                         }
                                     }
-                                } else {
-                                    //空值，尝试提供处理
-                                    Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
-                                    if (result != null) {
-                                        setFieldValue(field, object, result);
-                                    }
                                 }
                             } else if (Map.class.isAssignableFrom(fieldClass)) {
-                                if (!CollectionUtils.isEmpty((Map) value)) {
+                                if (!CollectionUtils.isEmpty((Map) value) && fieldWalkProcessor.isStepIn(field,object)) {
                                     ((Map) value).forEach((k, v) -> {
                                         Map.Entry entry = new Map.Entry() {
 
@@ -714,10 +697,6 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                                         };
                                         fieldWalkProcess(entry, fieldWalkProcessor);
                                     });
-                                } else {
-                                    //空值，尝试提供处理
-                                    Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
-                                    setFieldValue(field, object, result);
                                 }
                             }
                             if (log.isDebugEnabled()) {
@@ -759,6 +738,17 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
          * @return
          */
         boolean isEffected(Field field, Object object);
+
+
+        /**
+         * 是否步入
+         * @param field
+         * @param object
+         * @return
+         */
+        default  boolean isStepIn(Field field,Object object){
+            return true;
+        };
 
         /**
          * 成员操作
