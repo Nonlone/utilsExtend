@@ -81,7 +81,7 @@ public abstract class OkHttpClientUtils {
      * @return Response
      * @throws IOException
      */
-    public static Response post(@NotNull String url, FormBody body) throws IOException {
+    public static Response post(@NotNull String url, RequestBody body) throws IOException {
         return post(url, body, null);
     }
 
