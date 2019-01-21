@@ -667,13 +667,19 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                                 if (value != null) {
                                     // 非空，步入递归
                                     Class<?> classOfArray = field.getType().getComponentType();
+                                    boolean isPrimitivedClass = classOfArray.isPrimitive();
                                     int length = Array.getLength(value);
                                     for (int i = 0; i < length; i++) {
                                         Object obj = Array.get(value, i);
                                         if (log.isDebugEnabled()) {
                                             log.debug("DaShuCodeUtils traversedFieldWithAnnotationOperator classOfCollection class<{}> field<{}> value<{}>", classOfArray.getName(), field.getName(), JSON.toJSONString(obj));
                                         }
-                                        fieldWalkProcess(classOfArray.cast(obj), fieldWalkProcessor);
+                                        if(isPrimitivedClass) {
+                                            // 基本类型不转换
+                                            fieldWalkProcess(obj, fieldWalkProcessor);
+                                        }else{
+                                            fieldWalkProcess(classOfArray.cast(obj), fieldWalkProcessor);
+                                        }
                                     }
                                 } else {
                                     //空值，尝试提供处理
