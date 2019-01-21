@@ -24,6 +24,11 @@ public abstract class JSON extends com.alibaba.fastjson.JSON {
         return JSON.parseObject(JSON.toJSONString(jsonMap), classOfT);
     }
 
+    public static Map<String,Object> parseObjectRecurrence(String data) {
+        return parseRecurrence((JSONObject) JSON.parse(data));
+    }
+
+
     /**
      * 递归尝试序列化JSON
      *
