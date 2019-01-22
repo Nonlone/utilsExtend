@@ -617,12 +617,7 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                     getMethod.setAccessible(true);
                     Object value = getMethod.invoke(object);
                     if (fieldWalkProcessor.isEffected(field, object)) {
-                        // 集合类型
-                        Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
-                        if (result != null) {
-                            //非空值，回写成员变量
-                            setFieldValue(field, object, result);
-                        }
+                        // 递归处理
                         if (!fieldClass.getName().startsWith("java.lang")
                                 && !Modifier.isStatic(field.getModifiers())) {
                             // 复合类型，获取对象执行对应策略
@@ -630,7 +625,8 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                                     && !Map.class.isAssignableFrom(fieldClass)
                                     && !fieldClass.isArray()) {
                                 // 对象类型,判断步入递归
-                                if(fieldWalkProcessor.isStepIn(field,object)) {
+                                if(fieldWalkProcessor.isStepIn(field,object) && Objects.nonNull(value)) {
+                                    // 非空进入
                                     fieldWalkProcess(value, fieldWalkProcessor);
                                 }
                             } else if (Collection.class.isAssignableFrom(fieldClass)) {
@@ -648,7 +644,10 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                                         if (log.isDebugEnabled()) {
                                             log.debug("fieldWalkProcess classOfCollection class<{}> field<{}> value<{}>", classOfCollection.getName(), field.getName(), JSON.toJSONString(obj));
                                         }
-                                        fieldWalkProcess(classOfCollection.cast(obj), fieldWalkProcessor);
+                                        if(Objects.nonNull(obj)) {
+                                            // 非空进入
+                                            fieldWalkProcess(classOfCollection.cast(obj), fieldWalkProcessor);
+                                        }
                                     }
                                 }
                             } else if (fieldClass.isArray()) {
@@ -664,9 +663,10 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                                             log.debug("DaShuCodeUtils traversedFieldWithAnnotationOperator classOfCollection class<{}> field<{}> value<{}>", classOfArray.getName(), field.getName(), JSON.toJSONString(obj));
                                         }
                                         if(isPrimitivedClass) {
-                                            // 基本类型不转换
+                                            // 基本类型不转换，肯定不能为空
                                             fieldWalkProcess(obj, fieldWalkProcessor);
-                                        }else{
+                                        }else if(Objects.nonNull(obj)){
+                                            // 包装类或者组合类，非空进入
                                             fieldWalkProcess(classOfArray.cast(obj), fieldWalkProcessor);
                                         }
                                     }
@@ -702,6 +702,12 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
                             if (log.isDebugEnabled()) {
                                 log.warn("fieldWalkProcess not handle  class<{}> field<{}>", classOfT.getName(), field.getName());
                             }
+                        }
+                        // 生效类型
+                        Object result = fieldWalkProcessor.process(field, object, fieldWalkProcessor);
+                        if (result != null) {
+                            //非空值，回写成员变量
+                            setFieldValue(field, object, result);
                         }
                     } else {
                         // 判断不生效
