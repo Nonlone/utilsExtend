@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.feitai</groupId>
@@ -13,17 +14,18 @@
         <tag.version>${maven.build.timestamp}</tag.version>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
         <maven.javadoc.skip>true</maven.javadoc.skip>
-        <lombok.version>1.16.20</lombok.version>
-        <junit.version>4.12</junit.version>
+        <lombok.version>1.18.4</lombok.version>
+        <junit.version>4.13-beta-1</junit.version>
+        <maven.update.version>2.7</maven.update.version>
         <commons-lang.version>2.6</commons-lang.version>
-        <commons-lang3.version>3.7</commons-lang3.version>
+        <commons-lang3.version>3.8.1</commons-lang3.version>
         <commons-codec.version>1.11</commons-codec.version>
         <commons-io.version>2.6</commons-io.version>
         <commons-beanutils.version>1.9.3</commons-beanutils.version>
-        <fastjson.version>1.2.49</fastjson.version>
+        <fastjson.version>1.2.55</fastjson.version>
         <springside-utils.version>5.0.0-RC1</springside-utils.version>
-        <okhttp.version>3.9.1</okhttp.version>
-        <guava.version>25.0-jre</guava.version>
+        <okhttp.version>3.12.1</okhttp.version>
+        <guava.version>27.0.1-jre</guava.version>
         <javax-validation.version>2.0.1.Final</javax-validation.version>
     </properties>
 
@@ -195,6 +197,11 @@
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${maven.update.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>3.0.0</version>
                 <executions>
@@ -259,8 +266,17 @@
         <url>/git.feitai.info/jieya-server/utils</url>
         <!--项目查看地址-->
         <developerConnection>scm:git:http://git.feitai.info/jieya-server/utils.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${maven.update.version}</version>
+            </plugin>
+        </plugins>
+    </reporting>
 
 </project>
