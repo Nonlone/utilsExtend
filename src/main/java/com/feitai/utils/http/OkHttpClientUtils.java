@@ -54,7 +54,7 @@ public abstract class OkHttpClientUtils {
      * @param body
      * @return
      */
-    public static String postReturnBody(@NotNull String url, FormBody body) throws IOException {
+    public static String postReturnBody(@NotNull String url, RequestBody body) throws IOException {
         return post(url, body).body().string();
     }
 
@@ -81,7 +81,7 @@ public abstract class OkHttpClientUtils {
      * @return Response
      * @throws IOException
      */
-    public static Response post(@NotNull String url, FormBody body) throws IOException {
+    public static Response post(@NotNull String url, RequestBody body) throws IOException {
         return post(url, body, null);
     }
 
