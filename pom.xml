@@ -4,7 +4,7 @@
 
     <groupId>com.feitai</groupId>
     <artifactId>utils</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.1-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -265,7 +265,7 @@
         <url>/git.feitai.info/jieya-server/utils</url>
         <!--项目查看地址-->
         <developerConnection>scm:git:http://git.feitai.info/jieya-server/utils.git</developerConnection>
-        <tag>v1.4.0.201901280719</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <reporting>
