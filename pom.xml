@@ -37,31 +37,6 @@
         </profile>
     </profiles>
 
-    <repositories>
-        <repository>
-            <id>feitai-maven</id>
-            <name>feitai-maven</name>
-            <url>http://nexus.feitai.info/repository/maven-public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <distributionManagement>
-        <repository>
-            <id>feitai-release</id>
-            <url>http://nexus.feitai.info/repository/feitai-release/</url>
-        </repository>
-        <snapshotRepository>
-            <id>feitai-snapshot</id>
-            <url>http://nexus.feitai.info/repository/feitai-snapshot/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <dependencies>
 
         <dependency>
@@ -258,15 +233,6 @@
     </build>
 
 
-    <scm>
-        <!--只读权限的git地址，可以和developerConnection一样，如果权限没有细分的话-->
-        <connection>scm:git:http://git.feitai.info/jieya-server/utils.git</connection>
-        <!--具有写权限的git地址-->
-        <url>/git.feitai.info/jieya-server/utils</url>
-        <!--项目查看地址-->
-        <developerConnection>scm:git:http://git.feitai.info/jieya-server/utils.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
 
     <reporting>
         <plugins>
