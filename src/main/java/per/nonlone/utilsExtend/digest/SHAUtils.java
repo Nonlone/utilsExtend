@@ -1,9 +1,12 @@
 package per.nonlone.utilsExtend.digest;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 
+@Slf4j
 public abstract  class SHAUtils extends AbstractDigestUtils {
 
     /**

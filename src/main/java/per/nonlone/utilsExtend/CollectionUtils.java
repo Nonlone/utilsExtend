@@ -37,7 +37,7 @@ public abstract class CollectionUtils {
 			for (Object obj : collection) {
 				map.put(PropertyUtils.getProperty(obj, keyPropertyName),
 						PropertyUtils.getProperty(obj, valuePropertyName));
-			}
+			}	
 		} catch (Exception e) {
 			throw Exceptions.convertReflectionExceptionToUnchecked(e);
 		}
@@ -113,8 +113,12 @@ public abstract class CollectionUtils {
 	 * 判断是否为空.
 	 */
 	public static boolean isNotEmpty(Collection collection) {
-		return (collection != null) && !(collection.isEmpty());
+		return !isEmpty(collection);
 	}
+
+    public static boolean isNotEmpty(Map map) {
+        return !isEmpty(map);
+    }
 
 	/**
 	 * 取得Collection的第一个元素，如果collection为空返回null.

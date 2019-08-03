@@ -29,7 +29,7 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     /**
-     * 驼峰转下划线,效率比上面高
+     * 驼峰转下划线
      */
     public static String humpToLine(String str) {
         Matcher matcher = humpPattern.matcher(str);
@@ -41,37 +41,4 @@ public abstract class StringUtils extends org.apache.commons.lang3.StringUtils {
         return sb.toString();
     }
 
-    /**
-     * 清理字符串类型内容的前后引号
-     */
-    public static String cleanToJson(String str) {
-        if (StringUtils.isEmpty(str)) {
-            return str;
-        }
-        if (str.indexOf("\"") == 0) {
-            str = str.substring(1, str.length()); // 去掉第一个 "
-        }
-        if (str.lastIndexOf("\"") == (str.length() - 1)) {
-            str = str.substring(0, str.length() - 1); // 去掉最后一个 "
-        }
-        str = str.replace("\\\\", "");
-        str = str.replace("\\\"", "\"");// \"转化问题
-        return str;
-    }
-
-    /**
-     * 清理json中的多斜杠数据
-     * @param jsonStr
-     * @return
-     */
-    public static String formatJson(String jsonStr){
-        String params = "";
-        JSONObject object = JSONObject.parseObject(jsonStr);
-        params += StringEscapeUtils.unescapeJava(JSONObject.toJSONString(object))
-                .replaceAll("\\\\","")
-                .replaceAll("\\\\\\\\","").replaceAll("\\\"","\"")
-                .replaceAll(":\"\\{",":{")
-        .replaceAll("}\"","}");
-        return params;
-    }
 }

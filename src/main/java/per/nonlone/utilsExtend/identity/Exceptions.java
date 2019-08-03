@@ -14,7 +14,6 @@ import java.lang.reflect.InvocationTargetException;
  * 
  * 参考了guava的Throwables。
  * 
- * @author calvin
  */
 public class Exceptions {
 

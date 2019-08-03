@@ -24,9 +24,9 @@ public class SnowFlakeIdGenerator {
     /**
      * 每一部分占用的位数
      */
-    private final static long SEQUENCE_BIT = 12; //序列号占用的位数
-    private final static long MACHINE_BIT = 5;   //机器标识占用的位数
-    private final static long DATACENTER_BIT = 5;//数据中心占用的位数
+    private final static long SEQUENCE_BIT = 10; //序列号占用的位数
+    private final static long MACHINE_BIT = 2;   //机器标识占用的位数
+    private final static long DATACENTER_BIT = 3;//数据中心占用的位数
 
     /**
      * 每一部分的最大值
@@ -45,7 +45,10 @@ public class SnowFlakeIdGenerator {
      * 内部默认生成器
      */
     private static final SnowFlakeIdGenerator snowFlakeIdGenerator = new SnowFlakeIdGenerator(0, 0);
-
+    /**
+     * 默认时间格式
+     */
+    private final static FastDateFormat fdf = FastDateFormat.getInstance("ddHHmmss");
     private long datacenterId;  //数据中心
     private long machineId;     //机器标识
     private long sequence = 0L; //序列号
@@ -69,11 +72,35 @@ public class SnowFlakeIdGenerator {
      */
     public synchronized static long getDefaultNextId() {
         long id;
-        // 必须大于5位数
+        // 必须大于10位数
         do {
             id = snowFlakeIdGenerator.nextId();
         } while (Long.toString(id).length() < 10);
         return id;
+    }
+
+    /**
+     * 获取流水号带前缀
+     *
+     * @return
+     */
+    public static String getSerialNo(String prefix) {
+        try {
+            long nextid = snowFlakeIdGenerator.nextId();
+            if (nextid > 0) {
+                return prefix + nextid;
+            }
+        } catch (Exception e) {
+            log.error(String.format("getSerialNo prefix<%s>", prefix), e);
+        }
+        String time = "";
+        try {
+            time = fdf.format(new Date());
+        } catch (Exception e) {
+            log.error(String.format("getSerialNo prefix<%s>", prefix), e);
+            time = "00000000";
+        }
+        return prefix + time + RandomStringUtils.randomNumeric(5);
     }
 
     /**
@@ -119,35 +146,6 @@ public class SnowFlakeIdGenerator {
 
     private long getNewstmp() {
         return System.currentTimeMillis();
-    }
-
-    /**
-     * 默认时间格式
-     */
-    private final static FastDateFormat fdf = FastDateFormat.getInstance("ddHHmmss");
-
-    /**
-     * 获取流水号带前缀
-     *
-     * @return
-     */
-    public static String getSerialNo(String prefix) {
-        try {
-            long nextid = snowFlakeIdGenerator.nextId();
-            if (nextid > 0) {
-                return prefix + nextid;
-            }
-        } catch (Exception e) {
-            log.error(String.format("getSerialNo prefix<%s>", prefix), e);
-        }
-        String time = "";
-        try {
-            time = fdf.format(new Date());
-        } catch (Exception e) {
-            log.error(String.format("getSerialNo prefix<%s>", prefix), e);
-            time = "00000000";
-        }
-        return prefix + time + RandomStringUtils.randomNumeric(5);
     }
 
 }

@@ -11,21 +11,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Fastjson Key 过滤器
+ * Fastjson Key 正则匹配处理过滤器
  */
 @Slf4j
-public class KeyFilter implements ValueFilter {
+public class RegExKeyFilter implements ValueFilter {
 
     private static final Map<String, Pattern> regPatternMap = new HashMap<>();
 
     private final Map<String, KeyValueHandler> regKeyHandlerMap;
 
-    public KeyFilter(Map<String, KeyValueHandler> regKeyHandlerMap) {
+    public RegExKeyFilter(Map<String, KeyValueHandler> regKeyHandlerMap) {
         this.regKeyHandlerMap = regKeyHandlerMap;
     }
 
     /**
-     * 脱敏处理器
+     * Key匹配处理器
      */
     public interface KeyValueHandler {
 
@@ -71,7 +71,7 @@ public class KeyFilter implements ValueFilter {
                 }
                 Matcher matcher = pattern.matcher(name);
                 if (matcher.find()) {
-                    // KeyFilter 处理
+                    // RegExKeyFilter 处理
                     return keyValueHandler.doProcess(value);
                 }
             }
