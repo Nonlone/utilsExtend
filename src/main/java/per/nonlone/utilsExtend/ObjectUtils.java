@@ -168,6 +168,52 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
         return null;
     }
 
+
+    /**
+     * 循环向上转型, 获取对象的DeclaredField, 并强制设置为可访问.
+     * <p>
+     * 如向上转型到Object仍无法找到, 返回null.
+     */
+    public static Field getAccessibleField(final Class<?> clazz, final String fieldName) {
+        Validate.notNull(clazz, "class can't be null");
+        Validate.notBlank(fieldName, "fieldName can't be blank");
+        for (Class<?> superClass = clazz; superClass != Object.class; superClass = superClass.getSuperclass()) {
+            try {
+                Field field = superClass.getDeclaredField(fieldName);
+                makeAccessible(field);
+                return field;
+            } catch (NoSuchFieldException e) {// NOSONAR
+                // Field不在当前类定义,继续向上转型
+            }
+        }
+        return null;
+    }
+
+
+
+    /**
+     * 循环向上转型, 获取对象的DeclaredMethod,并强制设置为可访问.
+     * 如向上转型到Object仍无法找到, 返回null.
+     * 只匹配函数名。
+     * <p>
+     * 用于方法需要被多次调用的情况. 先使用本函数先取得Method,然后调用Method.invoke(Object obj, Object... args)
+     */
+    public static Method getAccessibleMethodByName(final Class<?> clazz, final String methodName) {
+        Validate.notNull(clazz, "class can't be null");
+        Validate.notBlank(methodName, "methodName can't be blank");
+
+        for (Class<?> searchType = clazz; searchType != Object.class; searchType = searchType.getSuperclass()) {
+            Method[] methods = searchType.getDeclaredMethods();
+            for (Method method : methods) {
+                if (method.getName().equals(methodName)) {
+                    makeAccessible(method);
+                    return method;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * 通过反射, 获得Class定义中声明的泛型参数的类型, 注意泛型必须定义在父类处
      * 如无法找到, 返回Object.class.
