@@ -1,4 +1,4 @@
-package per.nonlone.utilsExtend.json.serializer;
+package per.nonlone.utilsExtend.fastjson.serializer;
 
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.ObjectSerializer;

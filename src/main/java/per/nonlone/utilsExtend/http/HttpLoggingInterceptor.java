@@ -5,10 +5,14 @@ import okhttp3.internal.http.HttpHeaders;
 import okhttp3.internal.platform.Platform;
 import okio.Buffer;
 import okio.BufferedSource;
+import org.apache.commons.lang.RandomStringUtils;
+import per.nonlone.utilsExtend.jackson.JacksonUtils;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static okhttp3.internal.platform.Platform.INFO;
@@ -80,7 +84,7 @@ public final class HttpLoggingInterceptor implements Interceptor {
          * <-- END HTTP
          * }</pre>
          */
-        BODY,
+        BODY_WITH_HEADER,
         /**
          * Logs request and response lines and their respective bodies (if present).
          *
@@ -101,16 +105,19 @@ public final class HttpLoggingInterceptor implements Interceptor {
     }
 
     public interface Logger {
+
         void log(String message);
 
         /**
          * A {@link HttpLoggingInterceptor.Logger} defaults output appropriate for the current platform.
          */
         HttpLoggingInterceptor.Logger DEFAULT = new HttpLoggingInterceptor.Logger() {
+
             @Override
             public void log(String message) {
                 Platform.get().log(INFO, message, null);
             }
+
         };
     }
 
@@ -143,6 +150,9 @@ public final class HttpLoggingInterceptor implements Interceptor {
 
     @Override
     public Response intercept(Chain chain) throws IOException {
+
+        String randomId = RandomStringUtils.randomAlphanumeric(5);
+
         HttpLoggingInterceptor.Level level = this.level;
 
         Request request = chain.request();
@@ -150,31 +160,33 @@ public final class HttpLoggingInterceptor implements Interceptor {
             return chain.proceed(request);
         }
 
-        boolean logBody = (level == HttpLoggingInterceptor.Level.BODY || level == Level.BODY_NOT_HEAD);
+        boolean logBody = (level == HttpLoggingInterceptor.Level.BODY_WITH_HEADER || level == Level.BODY_NOT_HEAD);
         boolean logHeaders = (logBody && level != Level.BODY_NOT_HEAD) || level == HttpLoggingInterceptor.Level.HEADERS;
 
         RequestBody requestBody = request.body();
         boolean hasRequestBody = requestBody != null;
 
         Connection connection = chain.connection();
-        String requestStartMessage = "--> "
-                + request.method()
-                + ' ' + request.url()
+        String requestMessage = "-->"
+                + " " + randomId
+                + " " + request.method()
+                + " " + request.url()
                 + (connection != null ? " " + connection.protocol() : "");
         if (!logHeaders && hasRequestBody) {
-            requestStartMessage += " (" + requestBody.contentLength() + "-byte body)";
+            requestMessage += " (" + requestBody.contentLength() + "-byte body)";
         }
-        logger.log(requestStartMessage);
+
+        Map<String,String> headerMap = new HashMap<>();
 
         if (logHeaders) {
             if (hasRequestBody) {
                 // Request body headers are only present when installed as a network interceptor. Force
                 // them to be included (when available) so there values are known.
                 if (requestBody.contentType() != null) {
-                    logger.log("Content-Type: " + requestBody.contentType());
+                    requestMessage += " Content-Type: " + requestBody.contentType();
                 }
                 if (requestBody.contentLength() != -1) {
-                    logger.log("Content-Length: " + requestBody.contentLength());
+                    requestMessage += " Content-Length: " + requestBody.contentLength();
                 }
             }
 
@@ -183,15 +195,16 @@ public final class HttpLoggingInterceptor implements Interceptor {
                 String name = headers.name(i);
                 // Skip headers from the request body as they are explicitly logged above.
                 if (!"Content-Type".equalsIgnoreCase(name) && !"Content-Length".equalsIgnoreCase(name)) {
-                    logger.log(name + ": " + headers.value(i));
+                    headerMap.put(name,headers.value(i));
                 }
             }
+            requestMessage += String.format(" header<%s> ", JacksonUtils.toJSONString(headerMap));
         }
 
         if (!logBody || !hasRequestBody) {
-            logger.log("--> END " + request.method());
+            requestMessage += " >> END " + request.method();
         } else if (bodyEncoded(request.headers())) {
-            logger.log("--> END " + request.method() + " (encoded body omitted)");
+            requestMessage += " >> END " + request.method() + " (encoded body omitted)";
         } else {
             Buffer buffer = new Buffer();
             requestBody.writeTo(buffer);
@@ -209,22 +222,25 @@ public final class HttpLoggingInterceptor implements Interceptor {
                 if (resp.length() > 10240) {
                     resp = resp.substring(0, 10240) + "...";
                 }
-                logger.log(resp);
-                logger.log("--> END " + request.method()
-                        + " (" + requestBody.contentLength() + "-byte body)");
+                requestMessage += " body<"+resp+">";
+                requestMessage += " >> END " + request.method() + " (" + requestBody.contentLength() + "-byte body)";
             } else {
-                logger.log("--> END " + request.method() + " (binary "
-                        + requestBody.contentLength() + "-byte body omitted)");
+                requestMessage += " >> END " + request.method() + " (binary "+ requestBody.contentLength() + "-byte body omitted)";
             }
         }
 
+        // 输出日志
+        logger.log(requestMessage);
+
 
         long startNs = System.nanoTime();
+        String responseMessage = "";
+        headerMap.clear();
         Response response;
         try {
             response = chain.proceed(request);
         } catch (Exception e) {
-            logger.log("<-- HTTP FAILED: " + e);
+            logger.log("<-- "+randomId+" HTTP FAILED: " + e);
             throw e;
         }
         long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
@@ -232,23 +248,24 @@ public final class HttpLoggingInterceptor implements Interceptor {
         ResponseBody responseBody = response.body();
         long contentLength = responseBody.contentLength();
         String bodySize = contentLength != -1 ? contentLength + "-byte" : "unknown-length";
-        logger.log("<-- "
-                + response.code()
-                + (response.message().isEmpty() ? "" : ' ' + response.message())
-                + ' ' + response.request().url()
-                + " (" + tookMs + "ms" + (!logHeaders ? ", " + bodySize + " body" : "") + ')');
-
+        responseMessage += "<--"
+                + " " + randomId
+                + " " + response.code()
+                + (response.message().isEmpty() ? "" : " " + response.message())
+                + " " + response.request().url()
+                + " (" + tookMs + "ms" + (!logHeaders ? ", " + bodySize + " body" : "") + ')';
         if (logHeaders) {
             Headers headers = response.headers();
             for (int i = 0, count = headers.size(); i < count; i++) {
-                logger.log(headers.name(i) + ": " + headers.value(i));
+                headerMap.put(headers.name(i),headers.value(i));
             }
+            responseMessage += String.format(" header<%s>", JacksonUtils.toJSONString(headerMap));
         }
 
         if (!logBody || !HttpHeaders.hasBody(response)) {
-            logger.log("<-- END HTTP");
+            responseMessage += " << END HTTP";
         } else if (bodyEncoded(response.headers())) {
-            logger.log("<-- END HTTP (encoded body omitted)");
+            requestMessage += " << END HTTP (encode`d body omitted)";
         } else {
             BufferedSource source = responseBody.source();
             source.request(Long.MAX_VALUE); // Buffer the entire body.
@@ -261,8 +278,8 @@ public final class HttpLoggingInterceptor implements Interceptor {
             }
 
             if (!isPlaintext(buffer)) {
-                //logger.log("");
-                logger.log("<-- END HTTP (binary " + buffer.size() + "-byte body omitted)");
+                responseMessage += " << END HTTP (binary " + buffer.size() + "-byte body omitted)";
+                logger.log(responseMessage);
                 return response;
             }
 
@@ -274,13 +291,12 @@ public final class HttpLoggingInterceptor implements Interceptor {
                     resp = resp.substring(0, 10240) + "...";
                 }
 
-                logger.log(resp);
+                responseMessage += " body<"+resp+">";
             }
-
-            logger.log("<-- END HTTP (" + buffer.size() + "-byte body)");
-
+            responseMessage += " << END HTTP (" + buffer.size() + "-byte body)";
         }
 
+        logger.log(responseMessage);
         return response;
     }
 

@@ -1,4 +1,4 @@
-package per.nonlone.utilsExtend.json;
+package per.nonlone.utilsExtend.fastjson;
 
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;

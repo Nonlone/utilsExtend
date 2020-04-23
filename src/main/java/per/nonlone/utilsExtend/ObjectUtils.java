@@ -28,6 +28,24 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
     private static Logger logger = LoggerFactory.getLogger(ObjectUtils.class);
 
 
+    public static String getCallMethodName(){
+        return getCallMethodName(3);
+    }
+
+    public static String getCallMethodName(Integer stackTraceLevel){
+        if(stackTraceLevel<0){
+            stackTraceLevel = 1;
+        }
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        String methodName;
+        if (stackTraceElements.length > stackTraceLevel) {
+            methodName = stackTraceElements[stackTraceLevel].getMethodName();
+        } else {
+            methodName = stackTraceElements[1].getMethodName();
+        }
+        return methodName;
+    }
+
     /**
      * 通过JSON序列化进行深复制
      *
@@ -809,6 +827,5 @@ public abstract class ObjectUtils extends org.apache.commons.lang3.ObjectUtils {
          */
         Object process(Field field, Object object, FieldWalkProcessor fieldWalkProcessor);
     }
-
 
 }

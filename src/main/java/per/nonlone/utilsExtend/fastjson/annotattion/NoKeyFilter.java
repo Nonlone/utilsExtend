@@ -1,4 +1,4 @@
-package per.nonlone.utilsExtend.json.annotattion;
+package per.nonlone.utilsExtend.fastjson.annotattion;
 
 import java.lang.annotation.*;
 
