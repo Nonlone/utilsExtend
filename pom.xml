@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>per.nonlone</groupId>
-    <artifactId>utilsExtend</artifactId>
+    <artifactId>utils</artifactId>
     <version>1.5.0-SNAPSHOT</version>
 
     <properties>
