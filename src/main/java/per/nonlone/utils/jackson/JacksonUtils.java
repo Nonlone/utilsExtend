@@ -52,6 +52,15 @@ public abstract class JacksonUtils {
     }
 
     /**
+     * 设置NormalObjectMapper
+     * @param objectMapperBuilder
+     * @return
+     */
+    public static ObjectMapper setCachedNormalInstance(ObjectMapperBuilder objectMapperBuilder){
+        return buildCacheInstance(objectMapperBuilder);
+    }
+
+    /**
      * 获取缓存 普通ObjectMapper 实例
      *
      * @return
