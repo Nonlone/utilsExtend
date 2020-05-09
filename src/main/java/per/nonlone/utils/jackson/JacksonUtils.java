@@ -52,11 +52,11 @@ public abstract class JacksonUtils {
     }
 
     /**
-     * 设置NormalObjectMapper
+     * 设置defaultObjectMapper
      * @param objectMapperBuilder
      * @return
      */
-    public static ObjectMapper setCachedNormalInstance(ObjectMapperBuilder objectMapperBuilder){
+    public static ObjectMapper setCachedDefaultInstance(ObjectMapperBuilder objectMapperBuilder){
         return buildCacheInstance(objectMapperBuilder);
     }
 
@@ -65,8 +65,8 @@ public abstract class JacksonUtils {
      *
      * @return
      */
-    public static ObjectMapper getCachedNormalInstance() {
-        return buildCacheInstance(() -> getNormalInstance());
+    public static ObjectMapper getCachedDefaultInstance() {
+        return buildCacheInstance(() -> getDefaultInstance());
     }
 
     /**
@@ -74,7 +74,7 @@ public abstract class JacksonUtils {
      *
      * @return
      */
-    public static ObjectMapper getNormalInstance() {
+    public static ObjectMapper getDefaultInstance() {
         return new ObjectMapper() {{
             // 序列化忽略非空
             this.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
@@ -116,7 +116,7 @@ public abstract class JacksonUtils {
     }
 
     /**
-     * 使用 normalObjectMapper json 转换
+     * 使用 defaultObjectMapper json 转换
      *
      * @param map
      * @param classOfT
@@ -124,11 +124,11 @@ public abstract class JacksonUtils {
      * @return
      */
     public static <T> T mapToObject(Map<String, Object> map, Class<T> classOfT) {
-        return mapToObject(getCachedNormalInstance(), map, classOfT);
+        return mapToObject(getCachedDefaultInstance(), map, classOfT);
     }
 
     /**
-     * 使用 normalObjectMapper json 转换
+     * 使用 defaultObjectMapper json 转换
      *
      * @param map
      * @param type
@@ -136,12 +136,12 @@ public abstract class JacksonUtils {
      * @return
      */
     public static <T> T mapToObject(Map<String, Object> map, Type type) {
-        return mapToObject(getCachedNormalInstance(), map, type);
+        return mapToObject(getCachedDefaultInstance(), map, type);
     }
 
 
     /**
-     * 使用 normalObjectMapper json 转换
+     * 使用 defaultObjectMapper json 转换
      *
      * @param jsonString
      * @param classOfT
@@ -149,7 +149,7 @@ public abstract class JacksonUtils {
      * @return
      */
     public static <T> T stringToObject(String jsonString, Class<T> classOfT) throws IOException {
-        return stringToObject(getCachedNormalInstance(), jsonString, classOfT);
+        return stringToObject(getCachedDefaultInstance(), jsonString, classOfT);
     }
 
     /**
@@ -169,14 +169,14 @@ public abstract class JacksonUtils {
     }
 
     /**
-     * 使用 normalObjectMapper json 转换
+     * 使用 defaultObjectMapper json 转换
      *
      * @param jsonString
      * @param type
      * @return
      */
     public static <T> T stringToObject(String jsonString,Type type) throws IOException {
-        return stringToObject(getCachedNormalInstance(), jsonString, type);
+        return stringToObject(getCachedDefaultInstance(), jsonString, type);
     }
 
     public static <T> T stringToObject(ObjectMapper objectMapper, String jsonString, Type type) throws IOException {
@@ -187,7 +187,7 @@ public abstract class JacksonUtils {
     }
 
     public static Map<String, Object> toJSONMap(Object object) {
-        return toJSONMap(JacksonUtils.getCachedNormalInstance(), object);
+        return toJSONMap(JacksonUtils.getCachedDefaultInstance(), object);
     }
 
     public static Map<String, Object> toJSONMap(@NotNull ObjectMapper objectMapper, Object object) {
@@ -195,7 +195,7 @@ public abstract class JacksonUtils {
     }
 
     public static Map<String, Object> toJSONMap(String jsonString) throws IOException {
-        return toJSONMap(JacksonUtils.getCachedNormalInstance(), jsonString);
+        return toJSONMap(JacksonUtils.getCachedDefaultInstance(), jsonString);
     }
 
     public static Map<String, Object> toJSONMap(@NonNull ObjectMapper objectMapper, String jsonString) throws IOException {
@@ -206,7 +206,7 @@ public abstract class JacksonUtils {
     }
 
     public static List<Object> toJSONArray(Object object) {
-        return toJSONArray(JacksonUtils.getCachedNormalInstance(), object);
+        return toJSONArray(JacksonUtils.getCachedDefaultInstance(), object);
     }
 
     public static List<Object> toJSONArray(@NotNull ObjectMapper objectMapper, Object object) {
@@ -214,7 +214,7 @@ public abstract class JacksonUtils {
     }
 
     public static List<Object> toJSONArray(String jsonString) throws IOException {
-        return toJSONArray(JacksonUtils.getCachedNormalInstance(), jsonString);
+        return toJSONArray(JacksonUtils.getCachedDefaultInstance(), jsonString);
     }
 
     public static List<Object> toJSONArray(@NonNull ObjectMapper objectMapper, String jsonString) throws IOException {
@@ -225,7 +225,7 @@ public abstract class JacksonUtils {
     }
 
     public static String toJSONString(Object object) {
-        return toJSONString(JacksonUtils.getCachedNormalInstance(), object);
+        return toJSONString(JacksonUtils.getCachedDefaultInstance(), object);
     }
 
     public static String toJSONString(@NonNull ObjectMapper objectMapper, Object object) {
