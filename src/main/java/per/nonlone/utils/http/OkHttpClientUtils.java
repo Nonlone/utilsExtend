@@ -3,9 +3,9 @@ package per.nonlone.utils.http;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.IOUtils;
-import per.nonlone.utils.CollectionUtils;
-import per.nonlone.utils.jackson.JacksonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,26 +27,45 @@ public abstract class OkHttpClientUtils {
     /**
      * 默认解析器
      */
-    private static MessageConvertor messageConvertor = new MessageConvertor() {
+    private static MessageConvertor messageConvertor = null;
 
-        @Override
-        public <T> String serialize(T t) throws Exception {
-            return JacksonUtils.toJSONString(t);
-        }
+    /**
+     * 默认Response 解析器
+     */
+    public interface MessageConvertor {
 
-        @Override
-        public <T> T deserialize(String responseBody, Class<T> classOfT) throws Exception {
-            return JacksonUtils.stringToObject(responseBody, classOfT);
-        }
+        /**
+         * 序列化
+         *
+         * @param t
+         * @param <T>
+         * @return
+         */
+        <T> String serialize(T t) throws Exception;
 
-        @Override
-        public <T> T deserialize(String responseBody, Type type) throws Exception {
-            return JacksonUtils.stringToObject(responseBody, type);
-        }
-    };
+        /**
+         * 反序列化
+         *
+         * @param responseBody
+         * @param classOfT
+         * @param <T>
+         * @return
+         */
+        <T> T deserialize(String responseBody, Class<T> classOfT) throws Exception;
+
+        /**
+         * 反序列化
+         *
+         * @param responseBody
+         * @param type
+         * @param <T>
+         * @return
+         */
+        <T> T deserialize(String responseBody, Type type) throws Exception;
+    }
 
     private static OkHttpClient client = new OkHttpClient.Builder()
-            .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY_NOT_HEAD))
+            .addInterceptor(new HttpLoggingInterceptor().setLevel(okhttp3.logging.HttpLoggingInterceptor.Level.BODY))
             .connectTimeout(DEFAULT_CONNECT_TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(DEFAULT_READ_TIMEOUT, TimeUnit.SECONDS)
             .build();
@@ -77,11 +96,17 @@ public abstract class OkHttpClientUtils {
      * @throws IOException
      */
     public static <T> T parsePost(@NonNull String url, @NonNull Class<T> classOfT) throws Exception {
-        return messageConvertor.deserialize(postReturnBody(url), classOfT);
+        if(Objects.nonNull(messageConvertor)) {
+            return messageConvertor.deserialize(postReturnBody(url), classOfT);
+        }
+        throw new NullPointerException(String.format("messageConvertor is null"));
     }
 
     public static <T> T parsePost(@NonNull String url, @NonNull Type type) throws Exception {
-        return messageConvertor.deserialize(postReturnBody(url), type);
+        if(Objects.nonNull(messageConvertor)) {
+            return messageConvertor.deserialize(postReturnBody(url), type);
+        }
+        throw new NullPointerException(String.format("messageConvertor is null"));
     }
 
     /**
@@ -95,11 +120,17 @@ public abstract class OkHttpClientUtils {
      * @throws IOException
      */
     public static <T> T parsePost(@NonNull String url, @NonNull Object object, @NonNull Class<T> classOfT) throws Exception {
-        return messageConvertor.deserialize(postReturnBody(url, object), classOfT);
+        if(Objects.nonNull(messageConvertor)) {
+            return messageConvertor.deserialize(postReturnBody(url, object), classOfT);
+        }
+        throw new NullPointerException(String.format("messageConvertor is null"));
     }
 
     public static <T> T parsePost(@NonNull String url, @NonNull Object object, @NonNull Type type) throws Exception {
-        return messageConvertor.deserialize(postReturnBody(url, object), type);
+        if(Objects.nonNull(messageConvertor)) {
+            return messageConvertor.deserialize(postReturnBody(url, object), type);
+        }
+        throw new NullPointerException(String.format("messageConvertor is null"));
     }
 
     /**
@@ -113,11 +144,17 @@ public abstract class OkHttpClientUtils {
      * @throws IOException
      */
     public static <T> T parsePost(@NonNull String url, @NonNull Map<String, String> form, @NonNull Class<T> classOfT) throws Exception {
-        return messageConvertor.deserialize(postReturnBody(url, form), classOfT);
+        if(Objects.nonNull(messageConvertor)) {
+            return messageConvertor.deserialize(postReturnBody(url, form), classOfT);
+        }
+        throw new NullPointerException(String.format("messageConvertor is null"));
     }
 
     public static <T> T parsePost(@NonNull String url, @NonNull Map<String, String> form, @NonNull Type type) throws Exception {
-        return messageConvertor.deserialize(postReturnBody(url, form), type);
+        if(Objects.nonNull(messageConvertor)) {
+            return messageConvertor.deserialize(postReturnBody(url, form), type);
+        }
+        throw new NullPointerException(String.format("messageConvertor is null"));
     }
 
     /**
@@ -132,11 +169,17 @@ public abstract class OkHttpClientUtils {
      * @throws IOException
      */
     public static <T> T parsePost(@NonNull String url, @NonNull Headers headers, @NonNull RequestBody requestBody, @NonNull Class<T> classOfT) throws Exception {
-        return messageConvertor.deserialize(postReturnBody(url, headers, requestBody), classOfT);
+        if(Objects.nonNull(messageConvertor)) {
+            return messageConvertor.deserialize(postReturnBody(url, headers, requestBody), classOfT);
+        }
+        throw new NullPointerException(String.format("messageConvertor is null"));
     }
 
     public static <T> T parsePost(@NonNull String url, @NonNull Headers headers, @NonNull RequestBody requestBody, @NonNull Type type) throws Exception {
-        return messageConvertor.deserialize(postReturnBody(url, headers, requestBody), type);
+        if(Objects.nonNull(messageConvertor)) {
+            return messageConvertor.deserialize(postReturnBody(url, headers, requestBody), type);
+        }
+        throw new NullPointerException(String.format("messageConvertor is null"));
     }
 
 
@@ -431,7 +474,7 @@ public abstract class OkHttpClientUtils {
      */
     public static Response get(@NonNull String url, Headers headers, Map<String, String> params) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(url).newBuilder();
-        if (!CollectionUtils.isEmpty(params)) {
+        if (!MapUtils.isEmpty(params)) {
             for (Map.Entry<String, String> entry : params.entrySet()) {
                 urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
             }
@@ -528,40 +571,7 @@ public abstract class OkHttpClientUtils {
         return call;
     }
 
-    /**
-     * 默认Response 解析器
-     */
-    public static interface MessageConvertor {
 
-        /**
-         * 序列化
-         *
-         * @param t
-         * @param <T>
-         * @return
-         */
-        <T> String serialize(T t) throws Exception;
-
-        /**
-         * 反序列化
-         *
-         * @param responseBody
-         * @param classOfT
-         * @param <T>
-         * @return
-         */
-        <T> T deserialize(String responseBody, Class<T> classOfT) throws Exception;
-
-        /**
-         * 反序列化
-         *
-         * @param responseBody
-         * @param type
-         * @param <T>
-         * @return
-         */
-        <T> T deserialize(String responseBody, Type type) throws Exception;
-    }
 
     /**
      * 默认日志记录回调类
