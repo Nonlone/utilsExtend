@@ -14,7 +14,7 @@
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <lombok.version>1.18.4</lombok.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <maven.update.version>2.7</maven.update.version>
         <commons-lang.version>2.6</commons-lang.version>
         <commons-lang3.version>3.8.1</commons-lang3.version>
