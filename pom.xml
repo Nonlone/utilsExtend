@@ -20,7 +20,7 @@
         <commons-lang3.version>3.8.1</commons-lang3.version>
         <commons-codec.version>1.11</commons-codec.version>
         <commons-io.version>2.6</commons-io.version>
-        <commons-beanutils.version>1.9.3</commons-beanutils.version>
+        <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <fastjson.version>1.2.55</fastjson.version>
         <springside-utils.version>5.0.0-RC1</springside-utils.version>
         <okhttp.version>4.2.0</okhttp.version>
