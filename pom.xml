@@ -27,7 +27,7 @@
         <okhttp.logInterceptor.version>4.2.0</okhttp.logInterceptor.version>
         <guava.version>27.0.1-jre</guava.version>
         <javax-validation.version>2.0.1.Final</javax-validation.version>
-        <jackson.version>2.10.3</jackson.version>
+        <jackson.version>2.12.1</jackson.version>
         <joda-time.version>2.10.5</joda-time.version>
     </properties>
 
